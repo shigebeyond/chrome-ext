@@ -1,12 +1,22 @@
-alert('准备好复制');
+alert('注入复制脚本');
 // 复制文本到内存
 function copy_txt(txt){
-    let input = document.createElement('input');
-    document.body.appendChild(input);
-    input.setAttribute('value', txt);
-    input.select();
+    /* // input不支持多行，textarea支持多行
+    let textarea = document.createElement('textarea');
+    document.body.appendChild(textarea);
+    textarea.value = txt;
+    textarea.select();
     document.execCommand('copy');
-    document.body.removeChild(input);
+    document.body.removeChild(textarea);
+    */
+    let textarea = $("#textarea");
+    if(textarea.length == 0){
+        textarea = $("<textarea id='textarea'></textarea>");
+        $(document.body).append(textarea);
+    }
+    textarea.val(txt);
+    textarea[0].select();
+    document.execCommand('copy');
 }
 // 复制答案
 function copy_answer(e){
@@ -25,18 +35,22 @@ function copy_answer(e){
     let author = ans.find("meta[itemprop='name']").attr('content');
     // alert(author)
 
-    txt = document.title + ' -- ' + author + "\n" + url + "\n" + txt;
+    let title = document.title.replace(' - 知乎', '');
+    let i = title.indexOf(") ")
+    if(i >= 0)
+        title = title.substr(i + 1);
+    title = title + ' -- ' + author + "的回答";
+    txt = title + "\n" + url + "\n" + txt;
 
     copy_txt(txt)
 
-    alert('已复制');
+    alert('已复制:' + title);
 }
 // 知乎复制
 function copy_zhihu(){
-    let arr = document.getElementsByClassName('RichText');
-    for (let item of arr) {
-        item.onclick = copy_answer;
-    }
+    // $("span.RichText").click(copy_answer);
+    // 支持动态新元素
+    $("body").on("click", "span.RichText", copy_answer);
 };
 copy_zhihu();
 
