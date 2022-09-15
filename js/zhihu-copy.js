@@ -29,10 +29,14 @@ function copy_answer(e){
     // 获得url
     // <meta itemprop="url" content="https://www.zhihu.com/question/29747607/answer/784851871">
     let url = ans.children("meta[itemprop='url']").attr('content');
+    if(typeof(url) == "undefined")
+        url = window.location.href;
     //alert(url)
 
     // 获得作者名
     let author = ans.find("meta[itemprop='name']").attr('content');
+    if(typeof(author) == "undefined")
+        author = $('.UserLink-link').text();
     // alert(author)
 
     let title = document.title.replace(' - 知乎', '');
@@ -48,9 +52,10 @@ function copy_answer(e){
 }
 // 知乎复制
 function copy_zhihu(){
-    // $("span.RichText").click(copy_answer);
+    // $(".RichText").click(copy_answer);
     // 支持动态新元素
-    $("body").on("click", "span.RichText", copy_answer);
+    // 回答是 span.RichText， 文章是 div.RichText
+    $("body").on("click", ".RichText", copy_answer);
 };
 copy_zhihu();
 
