@@ -1,0 +1,30 @@
+{
+    "manifest_version": 2,
+    "name": "jktool",
+    "version": "1.0.0",
+    "description": "My Chrome extension.",
+    "icons":
+    {
+        "16": "img/icon.png",
+        "48": "img/icon.png"
+    },
+
+    "background":
+    {
+        "scripts": ["js/jquery-1.10.2.min.js", "js/zhihu-menu.js"]
+    },
+
+    "permissions":
+    [
+        "contextMenus", 
+        "tabs",
+        "notifications", 
+        "webRequest",
+        "webRequestBlocking",
+        "storage", 
+        "cookies",
+        "activeTab",
+        "http://*/*",
+        "https://*/*"
+    ]
+}
