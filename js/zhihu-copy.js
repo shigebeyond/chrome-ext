@@ -15,13 +15,17 @@ function copy_answer(e){
     let txt = ele.innerText;
     txt = txt.replace(/\n\n/g,'\n');
 
+    let ans = $(ele).closest('.AnswerItem');
     // 获得url
     // <meta itemprop="url" content="https://www.zhihu.com/question/29747607/answer/784851871">
-    let url = $(ele).find("meta[itemprop='url']");
-    alert(url)
+    let url = ans.children("meta[itemprop='url']").attr('content');
+    //alert(url)
 
-    // 获得作者
-    let author = '';
+    // 获得作者名
+    let author = ans.find("meta[itemprop='name']").attr('content');
+    // alert(author)
+
+    txt = document.title + ' -- ' + author + "\n" + url + "\n" + txt;
 
     copy_txt(txt)
 
@@ -35,3 +39,4 @@ function copy_zhihu(){
     }
 };
 copy_zhihu();
+
