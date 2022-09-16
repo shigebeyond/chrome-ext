@@ -52,10 +52,10 @@ function copy_answer(e){
 }
 // 知乎复制
 function copy_zhihu(){
-    // $(".RichText").click(copy_answer);
+    // $(".RichText").dblclick(copy_answer);
     // 支持动态新元素
     // 回答是 span.RichText， 文章是 div.RichText
-    $("body").on("click", ".RichText", copy_answer);
+    $("body").on("dblclick", ".RichText", copy_answer);
 };
 copy_zhihu();
 
