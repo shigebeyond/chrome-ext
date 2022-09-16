@@ -1,7 +1,8 @@
 // 右键菜单
+// 1 知乎支持复制
 chrome.contextMenus.create({
     title: '知乎支持复制',
-    id: '10',//一级菜单的id
+    id: '1',//一级菜单的id
     onclick: function (params) {
         chrome.tabs.getSelected(null, function (tab) {
             // 测试，可以执行
@@ -17,6 +18,27 @@ chrome.contextMenus.create({
             chrome.tabs.executeScript(tab.id, {
                 //code: code
                 file: 'js/zhihu-copy.js', // 相对于根目录
+            });
+        });
+    }
+});
+
+
+// 2 网页剪切报
+chrome.contextMenus.create({
+    title: '网页剪切报',
+    id: '2',//一级菜单的id
+    contexts: ['page', 'selection'], // page表示页面右键就会有这个菜单，如果想要当选中文字时才会出现此右键菜单，用：selection
+    onclick: function (params) {
+        chrome.tabs.getSelected(null, function (tab) {
+            let title = tab.title;
+            let url = params['pageUrl'];
+            let note = title + "\n" + url;
+            let txt = params['selectionText'];
+            if(typeof(txt) != "undefined")
+                note = note  + "\n" + txt;
+            $.post("http://localhost/note.php",{note: note},function(result){
+                alert(result);
             });
         });
     }
