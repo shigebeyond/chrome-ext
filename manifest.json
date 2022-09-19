@@ -11,8 +11,16 @@
 
     "background":
     {
-        "scripts": ["js/jquery-1.10.2.min.js", "js/menu.js"]
+        "scripts": ["js/jquery-1.10.2.min.js", "js/jquery.md5.js", "js/menu.js",  "js/tinybox.js"]
     },
+
+    "content_scripts": [
+        {
+          "matches": ["*://*/*"],
+          "css": ["css/tinybox.css"],
+          "js": ["js/jquery-1.10.2.min.js", "js/tinybox.js"]
+        }
+    ],
 
     "permissions":
     [
