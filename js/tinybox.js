@@ -121,3 +121,5 @@ TINY.page=function(){
 		}
 	}
 }();
+
+TINY.box.show('hello',0,0,0,0,3);

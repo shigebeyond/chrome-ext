@@ -11,14 +11,14 @@
 
     "background":
     {
-        "scripts": ["js/jquery-1.10.2.min.js", "js/jquery.md5.js", "js/menu.js",  "js/tinybox.js"]
+        "scripts": ["js/jquery-1.10.2.min.js", "js/jquery.md5.js", "js/eject.js", "js/menu.js"]
     },
 
     "content_scripts": [
         {
           "matches": ["*://*/*"],
-          "css": ["css/tinybox.css"],
-          "js": ["js/jquery-1.10.2.min.js", "js/tinybox.js"]
+          "css": ["css/eject.css"],
+          "js": ["js/jquery-1.10.2.min.js", "js/eject.js"]
         }
     ],
 
