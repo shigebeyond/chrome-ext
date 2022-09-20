@@ -18,16 +18,25 @@ function Eject(){
 	}
 	// 隐藏弹窗
 	_this.hide = function(){
+		qback.empty();
 		qback.remove();
 	}
 	/* 
 	alert提示窗
 	this.alert({
-      title:'alert提示文案',
-	  message:'这是alert弹窗，感觉还是很不错的'
+	      title:'alert提示文案',
+		message:'这是alert弹窗，感觉还是很不错的'
 	})
+	或
+	this.alert('alert提示文案', '这是alert弹窗，感觉还是很不错的')
 	*/
-	_this.alert = function(obj){
+	_this.alert = function(title, msg){
+		var obj;
+		if(title instanceof Object){
+			obj = title;
+		}else{
+			obj = { title:title, message:msg };
+		}
 		var alertBox = $('<div class="alertBox"></div>')
 		var alertHead = $('<div class="alertHead">'+obj.title+'</div>')
 		var alertMes = $('<div class="alertMes">'+obj.message+'</div>')
@@ -40,30 +49,43 @@ function Eject(){
 	/* 
 	confirm弹窗
 	this.confirm({
-      title:'confirm弹窗文案',
-      message:'这是confirm弹窗,你确定删除吗?',
-      confirm:function(){
-            alert('您点击了确定')
-      },
-      cancel:function(){
-            alert('您点击了取消')
-      }
+	      title:'confirm弹窗文案',
+	      message:'这是confirm弹窗,你确定删除吗?',
+	      confirm:function(){
+	            alert('您点击了确定')
+	      },
+	      cancel:function(){
+	            alert('您点击了取消')
+	      }
 	})
+	或
+	this.confirm('confirm弹窗文案', '这是confirm弹窗,你确定删除吗?')
+	如果缺少的confirm/cancel回调，可以通过收发消息机制来接收结果：消息为 modal-confirm
 	*/
-	_this.confirm = function(obj){
+	_this.confirm = function(title, msg){
+		var obj;
+		if(title instanceof Object){
+			obj = title;
+		}else{
+			obj = { title:title, message:msg };
+		}
 		var confirmBox = $('<div class="alertBox"></div>')
 		var confirmHead = $('<div class="alertHead">'+obj.title+'</div>')
 		var confirmMes = $('<div class="alertMes">'+obj.message+'</div>')
 		var confirmBtn = $('<span class="conBtn">确定</span>').on('click',function(e){
 			_this.hide();
 			setTimeout(function(){
-				obj.confirm()
+				if('confirm' in obj)
+					obj.confirm();
+				_this.sendConfirmMsg(true);
 			},100)
 		})
 		var confirmcancel = $('<span class="cancel">取消</span>').on('click',function(e){
 			_this.hide();
 			setTimeout(function(){
-				obj.cancel()
+				if('cancel' in obj)
+					obj.cancel();
+				_this.sendConfirmMsg(false);
 			},100)
 		})
 		confirmBox.append(confirmHead);
@@ -72,8 +94,17 @@ function Eject(){
 		confirmBox.append(confirmcancel);
 		_this.show(confirmBox);
 	},
+	// 发送确认框的结果消息: modal-confirm
+	_this.sendConfirmMsg = function(result){
+		if(typeof(chrome.extension) == "undefined")
+			return
+		// 发消息
+		chrome.extension.sendRequest({'modal-confirm': result}, function(response) {
+		  console.log(response.farewell);
+		});
+	},
 	// toast提示
-	_this.toast = function(mes,time){
+	_this.toast = function(mes,time = 2){
 		var timer= null;
 		var toastBox = $('<div class="toastBox">'+mes+'</div>')
 		_this.show(toastBox);
