@@ -60,15 +60,26 @@ chrome.contextMenus.create({
             // api
             $.get("https://dict.youdao.com/suggest?num=5&ver=3.0&doctype=json&cache=false&le=en&q=" + txt,function(result,status){
                 let entries = result['data']['entries'];
+                if(typeof(entries) == "undefined" || entries.length == 0){
+                    modalBg.toast('没查到该单词: ' + txt)
+                    return
+                }
                 let msg = '词典释义:';
                 for (let entry of entries){
                     msg += "\n" + entry['entry'] + ': ' + entry['explain'];
                 }
                 msg += "\n\n是否打词典网页？" 
-                if (confirm(msg)) {
+                /*if (confirm(msg)) {
                     // 网页
-                    window.open("https://youdao.com/result?word=" + txt + "&lang=en", "有道翻译", "");
-                }
+                    window.open("https://youdao.com/result?word=" + txt + "&lang=en", "有道词典", "");
+                }*/
+                modalBg.confirm({
+                      title: '词典释义',
+                      message: msg,
+                      confirm:function(){
+                            window.open("https://youdao.com/result?word=" + txt + "&lang=en", "有道词典", "");
+                      }
+                })
             });
         });
     }
@@ -124,6 +135,10 @@ chrome.contextMenus.create({
                 success: function(result) {
                     //alert(JSON.stringify(result));
                     let entries = result['translateResult'][0];
+                    if(typeof(entries) == "undefined" || entries.length == 0){
+                        modalBg.toast('翻译失败:')
+                        return
+                    }
                     let msg = '';
                     for (let entry of entries){
                         // src原文，tgt翻译

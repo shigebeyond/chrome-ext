@@ -6,9 +6,16 @@
  */
 function Eject(){
 	var _this = this;
-	// 全屏遮罩背景
-	var qback = $('<div class="qback"></div>').on('click',function(e){
+	// 全屏遮罩背景 -- 弹窗的容器
+	var qback = $('<div class="qback"></div>');
+	/*// 点击遮罩关闭弹窗, 仅首次有用
+	qback.on('click',function(e){
 		_this.hide()
+	});*/
+	// 按esc键关闭弹窗
+	$(document).keydown(function (event) {
+	  if (event.keyCode == 27)
+	      _this.hide()
 	});
 	// 显示弹窗
 	_this.show = function(alertBox){
@@ -23,12 +30,12 @@ function Eject(){
 	}
 	/* 
 	alert提示窗
-	this.alert({
+	modal.alert({
 	      title:'alert提示文案',
 		message:'这是alert弹窗，感觉还是很不错的'
 	})
 	或
-	this.alert('alert提示文案', '这是alert弹窗，感觉还是很不错的')
+	modal.alert('alert提示文案', '这是alert弹窗，感觉还是很不错的')
 	*/
 	_this.alert = function(title, msg){
 		var obj;
@@ -48,7 +55,7 @@ function Eject(){
 	}
 	/* 
 	confirm弹窗
-	this.confirm({
+	modal.confirm({
 	      title:'confirm弹窗文案',
 	      message:'这是confirm弹窗,你确定删除吗?',
 	      confirm:function(){
@@ -59,7 +66,7 @@ function Eject(){
 	      }
 	})
 	或
-	this.confirm('confirm弹窗文案', '这是confirm弹窗,你确定删除吗?')
+	modal.confirm('confirm弹窗文案', '这是confirm弹窗,你确定删除吗?')
 	如果缺少的confirm/cancel回调，可以通过收发消息机制来接收结果：消息为 modal-confirm
 	*/
 	_this.confirm = function(title, msg){

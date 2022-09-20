@@ -17,7 +17,7 @@ var modalBg = {
     },
     /* 
     confirm弹窗
-    this.confirm({
+    modalBg.confirm({
           title:'confirm弹窗文案',
           message:'这是confirm弹窗,你确定删除吗?',
           confirm:function(){
@@ -30,9 +30,9 @@ var modalBg = {
     */
     confirm: function(obj){
         _confirmParam = obj; // 记录confirm弹窗参数
-        obj.msg = obj.msg.replace(/\n/g, "<br>").replace(/'/g, "\\'");
+        obj.message = obj.message.replace(/\n/g, "<br>").replace(/'/g, "\\'");
         chrome.tabs.executeScript(null, {
-            code: `modal.confirm('${obj.title}', '${obj.msg}');`
+            code: `modal.confirm('${obj.title}', '${obj.message}');`
         });
     },
 };
