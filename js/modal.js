@@ -35,7 +35,8 @@ function modal_confirm(option){
         },300);
     })
 }
-modal_confirm({
+function test(){
+    modal_confirm({
     title:'标题',
     question:'',
     content:'content',
@@ -55,3 +56,5 @@ modal_confirm({
 
     ]
 });
+
+}

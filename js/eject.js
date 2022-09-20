@@ -69,5 +69,3 @@ function Eject(){
 		},1000)
 	}
 }
-let e = new Eject();
-e.Etoast('hello', 2);

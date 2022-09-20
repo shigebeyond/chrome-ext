@@ -37,12 +37,14 @@ chrome.contextMenus.create({
             let txt = params['selectionText'];
             if(typeof(txt) != "undefined")
                 note = note  + "\n" + txt;
-            TINY.box.show(note,0,0,0,0,3);
+            
             $.post("http://localhost/note.php",{note: note},function(result){
-                // Ealt.Etoast(result, 2)
-                // chrome.tabs.executeScript(tab.id, {
-                //     code: "Ealt.Etoast('" + result + "', 3);"
-                // });
+                // 不好使
+                //(new Eject()).Etoast(note, 2);
+                // 好使
+                chrome.tabs.executeScript(tab.id, {
+                    code: "(new Eject()).Etoast('test', 2);"
+                });
             });
         });
     }
