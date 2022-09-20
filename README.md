@@ -16,10 +16,10 @@ git clone https://github.com/shigebeyond/chrome-ext.git
 2. 将源码目录拖到chrome扩展程序页面
 
 # 功能
-1. 右键菜单-知乎回答复制
+1. 双击-复制知乎回答
 ![](img/zhihu-copy.png)
 
-注入知乎回答的复制脚本，后续通过双击某个回答，来将回答文本复制到内存(剪切板);
+在打开知乎网页时自动注入复制脚本，后续通过双击某个回答，来将回答文本复制到内存(剪切板);
 
 仅对知乎网站有效。
 
@@ -34,3 +34,16 @@ git clone https://github.com/shigebeyond/chrome-ext.git
 $r = file_put_contents('/home/shi/note.txt', $_POST['note']."\n\n", FILE_APPEND);
 echo $r ? 'true' : 'false';
 ```
+
+3. 右键菜单-有道词典
+![](img/dict-menu.png)
+
+查找单词结果
+![](img/dict-result.png)
+
+
+4. 右键菜单-有道翻译
+![](img/translate-menu.png)
+
+翻译结果
+![](img/translate-result.png)
