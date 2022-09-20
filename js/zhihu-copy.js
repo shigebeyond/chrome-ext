@@ -1,6 +1,6 @@
 modal.toast('注入复制脚本: 双击复制答案');
 // 复制文本到内存
-function copy_txt(txt){
+function copyTxt(txt){
     /* // input不支持多行，textarea支持多行
     let textarea = document.createElement('textarea');
     document.body.appendChild(textarea);
@@ -19,7 +19,7 @@ function copy_txt(txt){
     document.execCommand('copy');
 }
 // 复制答案
-function copy_answer(e){
+function copyAnswer(e){
     let ele = e.currentTarget;
     // 获得答案
     let txt = ele.innerText;
@@ -46,16 +46,16 @@ function copy_answer(e){
     title = title + ' -- ' + author + "的回答";
     txt = title + "\n" + url + "\n" + txt;
 
-    copy_txt(txt)
+    copyTxt(txt)
 
     modal.toast('已复制:' + title);
 }
 // 知乎复制
-function copy_zhihu(){
-    // $(".RichText").dblclick(copy_answer);
+function copyZhihu(){
+    // $(".RichText").dblclick(copyAnswer);
     // 支持动态新元素
     // 回答是 span.RichText， 文章是 div.RichText
-    $("body").on("dblclick", ".RichText", copy_answer);
+    $("body").on("dblclick", ".RichText", copyAnswer);
 };
-copy_zhihu();
+copyZhihu();
 
