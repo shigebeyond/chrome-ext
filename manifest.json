@@ -8,20 +8,21 @@
         "16": "img/icon.png",
         "48": "img/icon.png"
     },
-
     "background":
     {
         "scripts": ["js/jquery-1.10.2.min.js", "js/jquery.md5.js", "js/menu.js"]
     },
-
     "content_scripts": [
         {
           "matches": ["*://*/*"],
-          "css": ["css/eject.css"],
-          "js": ["js/jquery-1.10.2.min.js", "js/eject.js"]
+          "css": ["css/modal.css"],
+          "js": ["js/jquery-1.10.2.min.js", "js/modal.js"]
+        },
+        {
+          "matches": ["https://*.zhihu.com/*"],
+          "js": ["js/zhihu-copy.js"]
         }
     ],
-
     "permissions":
     [
         "contextMenus", 

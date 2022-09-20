@@ -1,6 +1,6 @@
 // 右键菜单
-// 1 知乎支持复制
-chrome.contextMenus.create({
+// 1 知乎支持复制 -- 不用右键，直接在页面加载时就注入
+/*chrome.contextMenus.create({
     title: '知乎支持复制',
     id: '1',//一级菜单的id
     onclick: function (params) {
@@ -21,7 +21,7 @@ chrome.contextMenus.create({
             });
         });
     }
-});
+});*/
 
 
 // 2 网页剪报
@@ -47,10 +47,10 @@ chrome.contextMenus.create({
 
 function toast(msg, time = 2){
     // 不好使
-    //(new Eject()).Etoast(note, 2);
+    //modal.toast(note, 2);
     // 好使
     chrome.tabs.executeScript(null, {
-        code: `(new Eject()).Etoast('${msg}', ${time});`
+        code: `modal.toast('${msg}', ${time});`
     });
 }
 

@@ -1,4 +1,4 @@
-alert('注入复制脚本');
+modal.toast('注入复制脚本: 双击复制答案');
 // 复制文本到内存
 function copy_txt(txt){
     /* // input不支持多行，textarea支持多行
@@ -48,7 +48,7 @@ function copy_answer(e){
 
     copy_txt(txt)
 
-    alert('已复制:' + title);
+    modal.toast('已复制:' + title);
 }
 // 知乎复制
 function copy_zhihu(){
