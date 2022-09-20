@@ -10,7 +10,7 @@
     },
     "background":
     {
-        "scripts": ["js/jquery-1.10.2.min.js", "js/jquery.md5.js", "js/menu.js"]
+        "scripts": ["js/jquery-1.10.2.min.js", "js/jquery.md5.js", "js/modal-bg.js", "js/menu.js"]
     },
     "content_scripts": [
         {

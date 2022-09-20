@@ -39,20 +39,11 @@ chrome.contextMenus.create({
                 note = note  + "\n" + txt;
             
             $.post("http://localhost/note.php",{note: note},function(result){
-                toast(result)
+                modalBg.toast(result)
             });
         });
     }
 });
-
-function toast(msg, time = 2){
-    // 不好使
-    //modal.toast(note, 2);
-    // 好使
-    chrome.tabs.executeScript(null, {
-        code: `modal.toast('${msg}', ${time});`
-    });
-}
 
 // 3 有道词典
 // 从 https://youdao.com/ 扒下来的api
@@ -133,12 +124,12 @@ chrome.contextMenus.create({
                 success: function(result) {
                     //alert(JSON.stringify(result));
                     let entries = result['translateResult'][0];
-                    let msg = '逐段翻译:';
+                    let msg = '';
                     for (let entry of entries){
                         // src原文，tgt翻译
-                        msg += "\n" + entry['tgt'];
+                        msg += entry['src'] + "\n" + entry['tgt'] + "\n\n";
                     }
-                    alert(msg);
+                    modalBg.alert('逐段翻译', msg);
                 },
                 error: function(e) {
                     alert('异常: ' + JSON.stringify(e));

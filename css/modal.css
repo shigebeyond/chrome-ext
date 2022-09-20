@@ -43,10 +43,13 @@ body{
 }
 .alertMes{
 	width: 100%;
-	height: auto;
-	overflow: hidden;
+	min-height: 13rem;
+    max-height: 40rem;
+    overflow-x: hidden;
+    overflow-y: auto;
+
 	padding: 25px 40px 35px;
-	text-align: center;
+	text-align: left;
 	font-size: 16px;
     color: #333;
     box-sizing: border-box;
