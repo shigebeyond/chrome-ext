@@ -13,11 +13,11 @@
             //var code = "var arr = document.getElementsByClassName('RichText');for (let item of arr) {    item.onclick = function(e){        var txt = e.currentTarget.innerText;        txt = txt.replace(/\n\n/g,'\n');        var input = document.createElement('input');        document.body.appendChild(input);        input.setAttribute('value', txt);        input.select();        document.execCommand('copy');        document.body.removeChild(input);        alert('已复制');    };}";
             chrome.tabs.executeScript({
                 //code: code
-                file: 'js/jquery-1.10.2.min.js'
+                file: 'js/lib/jquery-1.10.2.min.js'
             });
             chrome.tabs.executeScript(tab.id, {
                 //code: code
-                file: 'js/zhihu-copy.js', // 相对于根目录
+                file: 'js/fg/zhihu-copy.js', // 相对于根目录
             });
         });
     }
@@ -37,8 +37,8 @@ chrome.contextMenus.create({
             let txt = params['selectionText'];
             if(typeof(txt) != "undefined")
                 note = note  + "\n" + txt;
-            
-            $.post("http://localhost/note.php",{note: note},function(result){
+            let post_url = read_options(false)['note_post_url'];
+            $.post(post_url, {note: note}, function(result){
                 modalBg.toast(result)
             });
         });
@@ -168,3 +168,19 @@ function generateSaltSign(txt) {
         sign: $.md5("fanyideskweb" + txt + salt + "Ygy_4c=r#e#4EX^NUGUc5")
     }
 }
+
+// 5 远程打开相同网页
+chrome.contextMenus.create({
+    title: '远程打开',
+    id: '5',//一级菜单的id
+    contexts: ['page'], // page表示页面右键就会有这个菜单，如果想要当选中文字时才会出现此右键菜单，用：selection
+    onclick: function (params) {
+        chrome.tabs.getSelected(null, function (tab) {
+            let url = params['pageUrl'];
+            let post_url = read_options(false)['remote_open_post_url'];
+            $.post(post_url, {url: url}, function(result){
+                modalBg.toast(result)
+            });
+        });
+    }
+});

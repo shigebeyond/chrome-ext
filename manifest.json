@@ -2,25 +2,26 @@
     "manifest_version": 2,
     "name": "jktool",
     "version": "1.0.0",
-    "description": "My Chrome extension.",
+    "description": "Jktool Chrome extension.",
     "icons":
     {
         "16": "img/icon.png",
         "48": "img/icon.png"
     },
+    "options_page": "page/options.html",
     "background":
     {
-        "scripts": ["js/jquery-1.10.2.min.js", "js/jquery.md5.js", "js/modal-bg.js", "js/menu.js"]
+        "scripts": ["js/lib/jquery-1.10.2.min.js", "js/lib/jquery.md5.js", "js/lib/modal-bg.js", "js/options.js", "js/bg/menu.js"]
     },
     "content_scripts": [
         {
           "matches": ["*://*/*"],
           "css": ["css/modal.css"],
-          "js": ["js/jquery-1.10.2.min.js", "js/modal.js"]
+          "js": ["js/lib/jquery-1.10.2.min.js", "js/lib/modal.js"]
         },
         {
           "matches": ["https://*.zhihu.com/*"],
-          "js": ["js/zhihu-copy.js"]
+          "js": ["js/fg/zhihu-copy.js"]
         }
     ],
     "permissions":
