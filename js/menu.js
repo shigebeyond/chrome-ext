@@ -39,18 +39,20 @@ chrome.contextMenus.create({
                 note = note  + "\n" + txt;
             
             $.post("http://localhost/note.php",{note: note},function(result){
-                // 不好使
-                //(new Eject()).Etoast(note, 2);
-                // 好使
-                chrome.tabs.executeScript(tab.id, {
-                    code: "(new Eject()).Etoast('test', 2);"
-                });
+                toast(result)
             });
         });
     }
 });
 
-
+function toast(msg, time = 2){
+    // 不好使
+    //(new Eject()).Etoast(note, 2);
+    // 好使
+    chrome.tabs.executeScript(null, {
+        code: `(new Eject()).Etoast('${msg}', ${time});`
+    });
+}
 
 // 3 有道词典
 // 从 https://youdao.com/ 扒下来的api
