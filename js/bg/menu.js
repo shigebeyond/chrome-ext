@@ -184,3 +184,15 @@ chrome.contextMenus.create({
         });
     }
 });
+
+// 6 启动httpserver
+chrome.contextMenus.create({
+    title: 'http server',
+    id: '6',//一级菜单的id
+    contexts: ['page'], // page表示页面右键就会有这个菜单，如果想要当选中文字时才会出现此右键菜单，用：selection
+    onclick: function (params) {
+        let host = '*';
+        let port = '9876';
+        startHttpServer(host, port)
+    }
+});
