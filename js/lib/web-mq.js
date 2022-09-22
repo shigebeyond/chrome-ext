@@ -106,5 +106,5 @@ function unsubWebMq(channels) {
 //向channel中发布消息
 function publishWebMq(channel, data) {
   console.log('发布web消息: channel=' + channel + ', data=' + data);
-  socket.emit('publish', channel, msg);
+  socket.emit('publish', channel, data);
 }

@@ -179,7 +179,7 @@ chrome.contextMenus.create({
         let mqServerUrl = read_options(false)['mqServerUrl'];
         connectMqServer(mqServerUrl)
         // 监听mq：远程打开
-        subWebMq('remote_open', function(channel, mq){
+        subWebMq('remote_open', function(mq){
             let url = mq
             window.open(url, "远程打开", "");
         });
