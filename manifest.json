@@ -11,32 +11,19 @@
     "options_page": "page/options.html",
     "background":
     {
-        "scripts": ["js/lib/jquery-1.10.2.min.js", "js/lib/jquery.md5.js", "js/lib/modal-bg.js", "js/options.js", "js/lib/wsc-chrome.js", "js/bg/http-server.js", "js/bg/menu.js"]
+        "scripts": ["js/lib/jquery-1.10.2.min.js", "js/lib/jquery.md5.js", "js/lib/local-mq.js", "js/lib/modal-bg.js", "js/options.js", "js/lib/socket.io.js", "js/lib/web-mq.js", "js/bg/menu.js"]
     },
     "content_scripts": [
         {
           "matches": ["*://*/*"],
           "css": ["css/modal.css"],
-          "js": ["js/lib/jquery-1.10.2.min.js", "js/lib/modal.js"]
+          "js": ["js/lib/jquery-1.10.2.min.js", "js/lib/local-mq.js", "js/lib/modal.js"]
         },
         {
           "matches": ["https://*.zhihu.com/*"],
           "js": ["js/fg/zhihu-copy.js"]
         }
     ],
-    "sockets": {
-       "udp": {
-         "send": [""],
-         "bind": [""],
-         "multicastMembership": ""
-       },
-       "tcp": {
-         "connect": [""]
-       },
-       "tcpServer": {
-         "listen": ["*:*"]
-       }
-    },
     "permissions":
     [
         "contextMenus", 
@@ -48,8 +35,6 @@
         "cookies",
         "activeTab",
         "http://*/*",
-        "https://*/*",
-        "system.network",
-        {"fileSystem":["write","directory","retainEntries"]}
+        "https://*/*"
     ]
 }

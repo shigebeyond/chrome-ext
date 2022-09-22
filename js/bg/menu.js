@@ -37,7 +37,7 @@ chrome.contextMenus.create({
             let txt = params['selectionText'];
             if(typeof(txt) != "undefined")
                 note = note  + "\n" + txt;
-            let post_url = read_options(false)['note_post_url'];
+            let post_url = read_options(false)['notePostUrl'];
             $.post(post_url, {note: note}, function(result){
                 modalBg.toast(result)
             });
@@ -169,30 +169,31 @@ function generateSaltSign(txt) {
     }
 }
 
-// 5 远程打开相同网页
+// 5 连接mq server
 chrome.contextMenus.create({
-    title: '远程打开',
+    title: '连接消息服务器',
     id: '5',//一级菜单的id
     contexts: ['page'], // page表示页面右键就会有这个菜单，如果想要当选中文字时才会出现此右键菜单，用：selection
     onclick: function (params) {
-        chrome.tabs.getSelected(null, function (tab) {
-            let url = params['pageUrl'];
-            let post_url = read_options(false)['remote_open_post_url'];
-            $.post(post_url, {url: url}, function(result){
-                modalBg.toast(result)
-            });
+        // 连接mq server
+        let mqServerUrl = read_options(false)['mqServerUrl'];
+        connectMqServer(mqServerUrl)
+        // 监听mq：远程打开
+        subWebMq('remote_open', function(channel, mq){
+            let url = mq
+            window.open(url, "远程打开", "");
         });
     }
 });
 
-// 6 启动httpserver
+
+// 6 远程打开相同网页：发mq
 chrome.contextMenus.create({
-    title: 'http server',
+    title: '远程打开',
     id: '6',//一级菜单的id
     contexts: ['page'], // page表示页面右键就会有这个菜单，如果想要当选中文字时才会出现此右键菜单，用：selection
     onclick: function (params) {
-        let host = '*';
-        let port = '9876';
-        startHttpServer(host, port)
+        let url = params['pageUrl'];
+        publishWebMq('remote_open', url)
     }
 });

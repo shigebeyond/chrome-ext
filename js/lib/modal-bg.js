@@ -1,3 +1,5 @@
+// 用于在background中 调用content_script引入的弹窗
+
 var _confirmParam = null;//confirm弹窗参数，用于记录回调
 var modalBg = {
     toast: function(msg, time = 2){
@@ -37,13 +39,11 @@ var modalBg = {
     },
 };
 
-// 监听消息
-chrome.extension.onRequest.addListener(function(req, sender, sendResponse) {
-    console.log(sender.tab ? "recieve msg from a content script:" + sender.tab.url : "recieve msg from the extension");
-    // 处理确认框的结果消息
-    if('modal-confirm' in req && _confirmParam != null){
+// 监听消息: 接收 modal.js 发的消息, 处理确认框的结果消息
+subLocalMq('modal-confirm', function(confirm_result){
+    if(_confirmParam != null){
         // 回调
-        if(req['modal-confirm'])
+        if(confirm_result)
             _confirmParam.confirm();
         else
             _confirmParam.cancel();
@@ -51,6 +51,4 @@ chrome.extension.onRequest.addListener(function(req, sender, sendResponse) {
         // 清理confirm弹窗参数
         _confirmParam = null;
     }
-
-    sendResponse({}); // snub them.
 });

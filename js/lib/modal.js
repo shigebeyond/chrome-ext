@@ -105,10 +105,8 @@ function Eject(){
 	_this.sendConfirmMsg = function(result){
 		if(typeof(chrome.extension) == "undefined")
 			return
-		// 发消息
-		chrome.extension.sendRequest({'modal-confirm': result}, function(response) {
-		  console.log(response.farewell);
-		});
+		// 发消息: 通知 modal-bg.js
+		publishLocalMq('modal-confirm', result)
 	},
 	// toast提示
 	_this.toast = function(mes,time = 2){
