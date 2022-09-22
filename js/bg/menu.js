@@ -37,6 +37,13 @@ chrome.contextMenus.create({
             let txt = params['selectionText'];
             if(typeof(txt) != "undefined")
                 note = note  + "\n" + txt;
+            // 复制到剪切板
+            let code = note.replace(/"/g,'\"').replace(/\n/g,'\\n');
+            code = `copyTxt("${code}")`
+            chrome.tabs.executeScript(tab.id, {
+                code: code
+            });
+            // 提交后端
             let post_url = read_options(false)['notePostUrl'];
             $.post(post_url, {note: note}, function(result){
                 modalBg.toast(result)

@@ -17,7 +17,7 @@
         {
           "matches": ["*://*/*"],
           "css": ["css/modal.css"],
-          "js": ["js/lib/jquery-1.10.2.min.js", "js/lib/local-mq.js", "js/lib/modal.js"]
+          "js": ["js/lib/jquery-1.10.2.min.js", "js/lib/local-mq.js", "js/lib/modal.js", "js/fg/copy.js"]
         },
         {
           "matches": ["https://*.zhihu.com/*"],
