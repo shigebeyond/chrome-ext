@@ -25,19 +25,7 @@ function connectMqServer(url) {
     console.log('重连失败')
   });
   // 显示channel订阅显示消息  
-  socket.on('message', function (message) {
-    console.log('收到web消息:' + JSON.stringify(message));
-    let c = message.channel;
-    if(!c in webMqCallbacks){
-      console.log('未订阅channel:' + c);
-      modalBg.toast('未订阅channel:' + c)
-      return;
-    }
-
-    // 调用消费回调
-    let callback = webMqCallbacks[c]
-    callback(message.data)
-  });
+  socket.on('message', handleWebMq);
   //显示请求响应
   socket.on('ack', function (ack) {
     console.log(ack.request + '响应:' + ack.respone + ':' + ack.reply);        
@@ -69,13 +57,43 @@ function reconnectMqServer(url){
   }
 }
 
+// ---- 生产者者 ----
+//向channel中发布消息
+function publishWebMq(channel, data) {
+  console.log('发布web消息: channel=' + channel + ', data=' + data);
+  let msg = {
+    data: data,
+    fromSocketId: socket.id //传递 socketId，以便在收到消息时识别是不是本socket发的
+  }
+  socket.emit('publish', channel, JSON.stringify(msg));
+}
+
 // ---- 消费者 ----
 var webMqCallbacks = {};//mq消费回调
+
+// 处理收到的消息
+function handleWebMq(message) {
+  console.log('收到web消息:' + JSON.stringify(message));
+  let c = message.channel;
+  if(!c in webMqCallbacks){
+    console.log('未订阅channel:' + c);
+    modalBg.toast('未订阅channel:' + c)
+    return;
+  }
+
+  let {data, fromSocketId} = JSON.parse(message.data)
+  let own = fromSocketId == socket.id // 是否自己(本socket)发的消息
+
+  // 调用消费回调
+  let callback = webMqCallbacks[c]
+  callback(data, own)
+}
+
 /**
  * 订阅channel
  *   同一个channel重复订阅，直接覆盖
  * @param channels
- * @param callback mq消费回调，接收1个参数: mq数据
+ * @param callback mq消费回调，接收2个参数: 1 mq数据 2 是否本socket, 可省参数
  */
 function subWebMq(channels, callback) {
   if (typeof channels === 'string') {
@@ -100,11 +118,4 @@ function unsubWebMq(channels) {
   }
 
   socket.emit('unsubscribe', channels);
-}
-
-// ---- 生产者者 ----
-//向channel中发布消息
-function publishWebMq(channel, data) {
-  console.log('发布web消息: channel=' + channel + ', data=' + data);
-  socket.emit('publish', channel, data);
 }
