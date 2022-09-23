@@ -182,20 +182,32 @@ chrome.contextMenus.create({
     id: '5',//一级菜单的id
     contexts: ['page'], // page表示页面右键就会有这个菜单，如果想要当选中文字时才会出现此右键菜单，用：selection
     onclick: function (params) {
-        // 连接mq server
-        let mqServerUrl = read_options(false)['mqServerUrl'];
-        connectMqServer(mqServerUrl)
-        // 监听mq：远程打开
-        subWebMq('remote_open', function(mq, own){
-            if(own){
-                console.log('忽略自己调用的远程打开')
-                return
-            }
-            let url = mq
-            window.open(url, "远程打开", "");
-        });
+        initMq() // 初始化mq处理
     }
 });
+
+// 自动连接消息服务器
+let autoConnectMqServer = read_options(false)['autoConnectMqServer'];
+if(autoConnectMqServer){
+    console.log('自动连接消息服务器')
+    initMq()
+}
+
+// 初始化mq处理
+function initMq(){
+    // 连接mq server
+    let mqServerUrl = read_options(false)['mqServerUrl'];
+    connectMqServer(mqServerUrl)
+    // 监听mq：远程打开
+    subWebMq('remote_open', function(mq, own){
+        if(own){
+            console.log('忽略自己调用的远程打开')
+            return
+        }
+        let url = mq
+        window.open(url, "远程打开", "");
+    });
+}
 
 
 // 6 远程打开相同网页：发mq
