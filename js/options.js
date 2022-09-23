@@ -2,8 +2,8 @@
 $.fn.serializeObject = function()
 {
     var o = {};
-    var a = this.serializeArray();
-    $.each(a, function() {
+    var arr = this.serializeArray();
+    $.each(arr, function() {
         if (o[this.name] !== undefined) {
             if (!o[this.name].push) {
                 o[this.name] = [o[this.name]];
@@ -13,15 +13,24 @@ $.fn.serializeObject = function()
             o[this.name] = this.value || '';
         }
     });
+    // 处理checkbox
+    let cb = this.find("input[type=checkbox]")
+    $.each(cb, function() {
+        o[this.name] = this.checked
+    });
+    //alert(JSON.stringify(o))
     return o;
 };
 // 往 localStorage 写配置
 function save_options(opt = null, init = false) {
   // 获得配置
-  if(opt == null)
+  if(opt == null){
     opt = $("form").serializeObject();
+
+  }
   // 保存
   var json = JSON.stringify(opt);
+  console.log('选项: ' + json)
   localStorage["options"] = json;
 
   if(!init){
@@ -43,7 +52,12 @@ function read_options(fill_form = true) {
   
   if(fill_form){ // 填表单
     for (let k in opt){
-      $(`input[name=${k}]`).val(opt[k]);
+      let selector = `input[name=${k}]`
+      let val = opt[k]
+      if(typeof(val) == "boolean") // 布尔
+        $(selector).prop('checked', val)
+      else
+        $(selector).val(val);
     }
   }
   return opt;
@@ -54,6 +68,7 @@ function init_options(){
   opt = {
     'notePostUrl': "http://localhost/note.php",
     'mqServerUrl': "http://127.0.0.1:16379",
+    'autoConnectMqServer': true
   }
   save_options(opt, true)
   return opt;

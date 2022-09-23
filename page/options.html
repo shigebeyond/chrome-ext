@@ -22,7 +22,11 @@
           <label for="mqServerUrl">消息服务器地址</label>
           <input type="text" class="form-control" id="mqServerUrl" placeholder="mqServerUrl" name="mqServerUrl" >
         </div>
-        <button id="save" class="btn btn-default">Save</button>
+        <div class="form-group form-check">
+          <input type="checkbox" class="form-check-input" id="autoConnectMqServer" name="autoConnectMqServer">
+          <label class="form-check-label" for="autoConnectMqServer">自动连接消息服务器</label>
+        </div>
+        <button id="save" class="btn btn-default">保存</button>
       </form>
 
     </div>
