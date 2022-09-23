@@ -28,11 +28,10 @@ function save_options(opt = null, init = false) {
     opt = $("form").serializeObject();
 
   }
+  console.log('选项: ' + JSON.stringify(opt))
   // 保存
-  var json = JSON.stringify(opt);
-  console.log('选项: ' + json)
-  localStorage["options"] = json;
-
+  writeStore("options", opt)
+  
   if(!init){
     // 发消息：通知 web-mq.js 以便重新连接mq server
     publishLocalMq('mqServerUrlChange', opt['mqServerUrl'])
@@ -43,11 +42,9 @@ function save_options(opt = null, init = false) {
 
 // 从 localStorage 读配置
 function read_options(fill_form = true) {
-  var opt = localStorage["options"];
+  var opt = readStore("options")
   if (!opt) {
     opt = init_options();
-  }else{
-    opt = JSON.parse(opt);
   }
   
   if(fill_form){ // 填表单

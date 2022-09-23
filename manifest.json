@@ -11,7 +11,7 @@
     "options_page": "page/options.html",
     "background":
     {
-        "scripts": ["js/lib/jquery-1.10.2.min.js", "js/lib/jquery.md5.js", "js/lib/local-mq.js", "js/lib/modal-bg.js", "js/options.js", "js/lib/socket.io.js", "js/lib/web-mq.js", "js/bg/menu.js"]
+        "scripts": ["js/lib/jquery-1.10.2.min.js", "js/lib/jquery.md5.js", "js/lib/youdao.js", "js/lib/local-mq.js", "js/lib/modal-bg.js", "js/lib/store.js", "js/options.js", "js/lib/socket.io.js", "js/lib/web-mq.js", "js/lib/tab.js", "js/bg/menu.js"]
     },
     "content_scripts": [
         {

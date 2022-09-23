@@ -44,9 +44,9 @@ subLocalMq('modal-confirm', function(confirm_result){
     if(_confirmParam != null){
         // 回调
         if(confirm_result)
-            _confirmParam.confirm();
+            _confirmParam.confirm && _confirmParam.confirm();
         else
-            _confirmParam.cancel();
+            _confirmParam.cancel && _confirmParam.cancel();
 
         // 清理confirm弹窗参数
         _confirmParam = null;

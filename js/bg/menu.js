@@ -65,29 +65,15 @@ chrome.contextMenus.create({
                 return
             }
             // api
-            $.get("https://dict.youdao.com/suggest?num=5&ver=3.0&doctype=json&cache=false&le=en&q=" + txt,function(result,status){
-                let entries = result['data']['entries'];
-                if(typeof(entries) == "undefined" || entries.length == 0){
-                    modalBg.toast('没查到该单词: ' + txt)
-                    return
-                }
-                let msg = '词典释义:';
-                for (let entry of entries){
-                    msg += "\n" + entry['entry'] + ': ' + entry['explain'];
-                }
-                msg += "\n\n是否打词典网页？" 
-                /*if (confirm(msg)) {
-                    // 网页
-                    window.open("https://youdao.com/result?word=" + txt + "&lang=en", "有道词典", "");
-                }*/
+            youdaoDict(txt, function(result){
                 modalBg.confirm({
                       title: '词典释义',
-                      message: msg,
+                      message: result,
                       confirm:function(){
                             window.open("https://youdao.com/result?word=" + txt + "&lang=en", "有道词典", "");
                       }
                 })
-            });
+            })
         });
     }
 });
@@ -104,77 +90,12 @@ chrome.contextMenus.create({
             if(typeof(txt) == "undefined"){
                 return
             }
-            let r = generateSaltSign(txt);
-            let headers = {
-                'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36',
-                Referer: 'https://fanyi.youdao.com/',
-                Host: 'fanyi.youdao.com',
-                Origin: 'https://fanyi.youdao.com',
-                'Cache-Control': 'no-cache',
-                Connection: 'keep-alive',
-            };
-            let data = {
-                i: txt,
-                from: "AUTO",
-                to: "AUTO",
-                smartresult: "dict",
-                client: "fanyideskweb",
-                salt: r.salt,
-                sign: r.sign,
-                lts: r.ts,
-                bv: r.bv,
-                doctype: "json",
-                version: "2.1",
-                keyfrom: "fanyi.web",
-                action: "FY_BY_REALTlME"
-            };
-            // url是 /translate_o -- https://www.cnblogs.com/lpyy/p/14399676.htm
-            //let url = "https://fanyi.youdao.com/translate_o?smartresult=dict&smartresult=rule"; // 奇怪，网站调试js是这个url，但响应错误{"errorCode":50}, 看上面文章是差不多，只不过多加了cookie
-            // url 是 /translate -- https://zhuanlan.zhihu.com/p/368198711
-            let url = "https://fanyi.youdao.com/translate?smartresult=dict&smartresult=rule";
-            m = $.ajax({
-                type: "POST",
-                contentType: "application/x-www-form-urlencoded; charset=UTF-8",
-                url: url,
-                headers: headers,
-                data: data,
-                dataType: "json",
-                success: function(result) {
-                    //alert(JSON.stringify(result));
-                    let entries = result['translateResult'][0];
-                    if(typeof(entries) == "undefined" || entries.length == 0){
-                        modalBg.toast('翻译失败:')
-                        return
-                    }
-                    let msg = '';
-                    for (let entry of entries){
-                        // src原文，tgt翻译
-                        msg += entry['src'] + "\n" + entry['tgt'] + "\n\n";
-                    }
-                    modalBg.alert('逐段翻译', msg);
-                },
-                error: function(e) {
-                    alert('异常: ' + JSON.stringify(e));
-                }
+            youdaoTranslate(txt, function(result){
+                modalBg.alert('逐段翻译', result);
             })
         });
     }
 });
-
-// 有道翻译-生成签名
-function generateSaltSign(txt) {
-    // let navigatorAppVersion = '5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36';
-    // let ver = $.md5(navigatorAppVersion);
-    let ver = '84afaa1f696d79a939ece6748a3b1fcd';
-    let ts = "" + (new Date).getTime()
-      , salt = ts + parseInt(10 * Math.random(), 10);
-    return {
-        ts: ts,
-        bv: ver,
-        salt: salt,
-        sign: $.md5("fanyideskweb" + txt + salt + "Ygy_4c=r#e#4EX^NUGUc5")
-    }
-}
 
 // 5 连接mq server
 chrome.contextMenus.create({
@@ -218,5 +139,52 @@ chrome.contextMenus.create({
     onclick: function (params) {
         let url = params['pageUrl'];
         publishWebMq('remote_open', url)
+    }
+});
+
+
+// 7 备份打开的网址
+chrome.contextMenus.create({
+    title: '备份打开的网址',
+    id: '7',//一级菜单的id
+    contexts: ['page'], // page表示页面右键就会有这个菜单，如果想要当选中文字时才会出现此右键菜单，用：selection
+    onclick: function (params) {
+        getAllTabUrls(function(urls){
+            writeStore("backupUrls", urls)
+        })
+    }
+});
+
+
+// 8 恢复备份的网址
+chrome.contextMenus.create({
+    title: '恢复备份的网址',
+    id: '8',//一级菜单的id
+    contexts: ['page'], // page表示页面右键就会有这个菜单，如果想要当选中文字时才会出现此右键菜单，用：selection
+    onclick: function (params) {
+        // 获得备份的网址
+        var urls = readStore("backupUrls")
+        //urls = ['https://open.chrome.360.cn/extension_dev/windows.html']
+        // alert(urls)
+        // 网址为空
+        if(typeof(urls) == "undefined" || urls.length == 0){
+            modalBg.toast('无备份网址')
+            return
+        }
+        // 新建视窗
+        chrome.windows.create({
+            url: urls
+        }, function(win) {
+            console.log('新建视窗: ' + JSON.stringify(win))
+            setTimeout(function(){
+                modalBg.confirm({
+                      title: '提示',
+                      message: '已恢复备份网址，是否删除备份数据',
+                      confirm:function(){
+                            delStore("backupUrls")
+                      }
+                })
+            }, 2000)
+        })
     }
 });

@@ -7,7 +7,8 @@ var socket = null;
 function connectMqServer(url) {
   console.log('连接消息服务器')
   socket = io.connect(url);
-  console.log(socket)
+  // socket.id属性标识socket
+  // console.log(socket)
   socket.on('reconnecting', function (attemptNumber) {
     console.log('尝试建立ws连接')
   });
