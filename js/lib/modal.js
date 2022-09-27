@@ -31,7 +31,7 @@ function Eject(){
 	/* 
 	alert提示窗
 	modal.alert({
-	      title:'alert提示文案',
+	    title:'alert提示文案',
 		message:'这是alert弹窗，感觉还是很不错的'
 	})
 	或
@@ -124,6 +124,43 @@ function Eject(){
 			}
 		},1000)
 	}
+/* 
+	input弹窗
+	modal.input({
+	      title:'input弹窗文案',
+	      message:'这是input弹窗,请输入参数',
+	      accept:function(val){
+	            alert('您输入了' + val)
+	      },
+	})
+	或
+	modal.input('input弹窗文案', '这是input弹窗,你确定删除吗?')
+	如果缺少的input/cancel回调，可以通过收发消息机制来接收结果：消息为 modal-input
+	*/
+	_this.input = function(title, msg){
+		var obj;
+		if(title instanceof Object){
+			obj = title;
+		}else{
+			obj = { title:title, message:msg };
+		}
+		var inputBox = $('<div class="alertBox"></div>')
+		var inputHead = $('<div class="alertHead">输入弹窗</div>')
+		// 输入框
+		var inputMes = $('<div class="alertMes">'+obj.prefix+'<input type="text" id="input">'+obj.postfix+'</div>')
+		var inputBtn = $('<span class="conBtn">确定</span>').on('click',function(e){
+			let val = inputMes.find('#input').val()
+			if('accept' in obj)
+				obj.accept(val);
+			_this.hide();
+		})
+		var inputcancel = $('<span class="cancel">取消</span>').on('click', _this.hide)
+		inputBox.append(inputHead);
+		inputBox.append(inputMes);
+		inputBox.append(inputBtn);
+		inputBox.append(inputcancel);
+		_this.show(inputBox);
+	},
 }
 
 // 实例化
