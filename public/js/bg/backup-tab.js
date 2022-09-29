@@ -46,7 +46,7 @@ function backupCurrTab() {
  * 备份所有标签页
  */
 function backupAllTabs() {
-    getAllTabPages(function (tabs) {
+    getAllTabs(function (tabs) {
         let pages = tabs.map(tab2entity)
         appendStore("backupTabs", pages)
         modalBg.toast('备份成功', 1)
