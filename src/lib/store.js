@@ -13,6 +13,17 @@ function writeStore(key, value){
   localStorage[key] = json;
 }
 
+// 追加
+function appendStore(key, value){
+  let arr = readStore(key) || []
+  if(Array.isArray(value)){ // 数组合并
+    arr = arr.concat(value)
+  }else{
+    arr.push(value)
+  }
+  writeStore(key, arr)
+}
+
 // 删单项
 function delStore(key){
   localStorage.removeItem(key)
@@ -26,7 +37,7 @@ function clearStores(){
 export default {
   readStore,
   writeStore,
+  appendStore,
   delStore,
   clearStores
 }
-

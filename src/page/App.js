@@ -1,3 +1,5 @@
+/* global chrome */
+
 import React, { useState, useEffect, useRef } from 'react';
 import { classNames } from 'primereact/utils';
 import { DataTable } from 'primereact/datatable';
@@ -6,28 +8,27 @@ import { Toast } from 'primereact/toast';
 import { Button } from 'primereact/button';
 import { InputTextarea } from 'primereact/inputtextarea';
 import { Dialog } from 'primereact/dialog';
+import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 import { InputText } from 'primereact/inputtext';
 import 'primereact/resources/themes/saga-blue/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
 import 'primeflex/primeflex.css';
-import store from './store'
+import store from '../lib/store'
 
 // 存储的key
 const storeKey = "backupTabs";
 
 function App() {
     let emptyTab = {
-        id: null,
+        id: 0,
         name: '',
         url: '',
-        date: '2022-09-28'
+        date: ''
     };
 
     const [tabs, setTabs] = useState(null);
     const [tabDialog, setTabDialog] = useState(false);
-    const [deleteTabDialog, setDeleteTabDialog] = useState(false);
-    const [deleteTabsDialog, setDeleteTabsDialog] = useState(false);
     const [tab, setTab] = useState(emptyTab);
     const [selectedTabs, setSelectedTabs] = useState(null);
     const [submitted, setSubmitted] = useState(false);
@@ -40,13 +41,20 @@ function App() {
         setTabs(data)
     }, []);
 
-    useEffect((param) => {
-        debugger;
-        console.log(param)
-    }, [tabs]);
-
+    /**
+     * 获得备份的标签页
+     * @returns []
+     */
     const getTabs = () => {
         return store.readStore(storeKey) || []
+    }
+
+    /**
+     * 设置tabs状态+保存
+     */
+    const setAndStoreTabs = (tabs) => {
+        setTabs(tabs)
+        store.writeStore(storeKey, tabs)
     }
 
     const openNew = () => {
@@ -60,14 +68,13 @@ function App() {
         setTabDialog(false);
     }
 
-    const hideDeleteTabDialog = () => {
-        setDeleteTabDialog(false);
+    function showToast(msg) {
+        toast.current.show({severity: 'success', summary: 'Successful', detail: msg, life: 3000});
     }
 
-    const hideDeleteTabsDialog = () => {
-        setDeleteTabsDialog(false);
-    }
-
+    /**
+     * 保存编辑的标签页
+     */
     const saveTab = () => {
         setSubmitted(true);
 
@@ -76,33 +83,42 @@ function App() {
             let _tab = {...tab};
             const index = findIndexById(tab.id);
             _tabs[index] = _tab;
-            store.writeStore(storeKey, _tabs)
-
-            toast.current.show({ severity: 'success', summary: 'Successful', detail: 'Tab Updated', life: 3000 });
-            setTabs(_tabs);
+            showToast('更新标签页');
+            setAndStoreTabs(_tabs);
             setTabDialog(false);
             setTab(emptyTab);
         }
     }
 
+    /**
+     * 编辑的标签页
+     * @param tab
+     */
     const editTab = (tab) => {
         setTab({...tab});
         setTabDialog(true);
     }
 
+    /**
+     * 确认删除单个标签页
+     * @param tab
+     */
     const confirmDeleteTab = (tab) => {
-        setTab(tab);
-        setDeleteTabDialog(true);
+        confirmDialog({
+            message: `你要删除标签页[${tab.name}]吗?`,
+            header: 'Confirmation',
+            icon: 'pi pi-exclamation-triangle',
+            accept: () => deleteTab(tab),
+        });
     }
 
-    const deleteTab = () => {
+    /**
+     * 删除单个标签页
+     */
+    const deleteTab = (tab) => {
         let _tabs = tabs.filter(val => val.id !== tab.id);
-        store.writeStore(storeKey, _tabs)
-
-        setTabs(_tabs);
-        setDeleteTabDialog(false);
-        setTab(emptyTab);
-        toast.current.show({ severity: 'success', summary: 'Successful', detail: 'Tab Deleted', life: 3000 });
+        setAndStoreTabs(_tabs);
+        showToast('删除标签页')
     }
 
     const findIndexById = (id) => {
@@ -117,23 +133,58 @@ function App() {
         return index;
     }
 
+    /**
+     * 导出
+     */
     const exportCSV = () => {
         dt.current.exportCSV();
     }
 
-    const confirmDeleteSelected = () => {
-        setDeleteTabsDialog(true);
+    /**
+     * 打开选中的标签页
+     */
+    const openSelected = () => {
+        let urls = selectedTabs.map((tab) => {
+            return tab.url;
+        })
+        // 新建视窗
+        chrome.windows.create({
+            url: urls
+        }, function (win) {
+            console.log('新建视窗: ' + JSON.stringify(win))
+            showToast('打开并删除选中的标签页')
+            // 删除选中标签页
+            deleteSelectedTabs()
+        })
     }
 
+    /**
+     * 确认删除选中的多个标签页
+     */
+    const confirmDeleteSelected = () => {
+        confirmDialog({
+            message: `你要删除选中的标签页吗?`,
+            header: 'Confirmation',
+            icon: 'pi pi-exclamation-triangle',
+            accept: deleteSelectedTabs,
+        });
+    }
+
+    /**
+     * 删除选中的多个标签页
+     */
     const deleteSelectedTabs = () => {
         let _tabs = tabs.filter(val => !selectedTabs.includes(val));
-        setTabs(_tabs);
-        setDeleteTabsDialog(false);
+        setAndStoreTabs(_tabs);
         setSelectedTabs(null);
-        toast.current.show({ severity: 'success', summary: 'Successful', detail: 'Tabs Deleted', life: 3000 });
+        showToast('删除选中标签页')
     }
 
-
+    /**
+     * 编辑弹窗中的某个字段的输入框的输入监听
+     * @param e
+     * @param name
+     */
     const onInputChange = (e, name) => {
         const val = (e.target && e.target.value) || '';
         let _tab = {...tab};
@@ -142,25 +193,32 @@ function App() {
         setTab(_tab);
     }
 
-    const onInputNumberChange = (e, name) => {
-        const val = e.value || 0;
-        let _tab = {...tab};
-        _tab[`${name}`] = val;
-
-        setTab(_tab);
-    }
-
+    /**
+     * 获得域名
+     * @param url
+     * @returns {*}
+     */
     const getDomain = (url) => {
-        let reg = /http(s):\/\/([^/]+)\//i;
+        let reg = /https?:\/\/([^/]+)\//i;
         let domain = url.match(reg);
         return domain && domain[2];
     }
 
+    /**
+     * url列渲染
+     * @param rowData
+     * @returns {JSX.Element}
+     */
     const urlBodyTemplate = (rowData) => {
         let domain = getDomain(rowData.url)
         return <a href={rowData.url} target="_blank" className="w-7rem shadow-2">{domain}</a>
     }
 
+    /**
+     * 操作按钮列渲染
+     * @param rowData
+     * @returns {JSX.Element}
+     */
     const actionBodyTemplate = (rowData) => {
         return (
             <React.Fragment>
@@ -170,6 +228,7 @@ function App() {
         );
     }
 
+    // 表头
     const header = (
         <div className="flex flex-column md:flex-row md:align-items-center justify-content-between">
             <span className="p-input-icon-left w-full md:w-auto">
@@ -178,10 +237,13 @@ function App() {
             </span>
             <div className="mt-3 md:mt-0 flex justify-content-end">
                 <Button icon="pi pi-trash" className="p-button-danger mr-2 p-button-rounded" onClick={confirmDeleteSelected} disabled={!selectedTabs || !selectedTabs.length} tooltip="Delete" tooltipOptions={{position: 'bottom'}} />
+                <Button icon="pi pi-external-link" className="p-button-warning p-button-rounded" onClick={openSelected} disabled={!selectedTabs || !selectedTabs.length} tooltip="Open" tooltipOptions={{position: 'bottom'}} />
                 <Button icon="pi pi-upload" className="p-button-help p-button-rounded" onClick={exportCSV} tooltip="Export" tooltipOptions={{position: 'bottom'}} />
             </div>
         </div>
     );
+
+    // 编辑弹窗的页脚
     const tabDialogFooter = (
         <React.Fragment>
             <Button label="Cancel" icon="pi pi-times" className="p-button-text" onClick={hideDialog} />
@@ -189,27 +251,15 @@ function App() {
         </React.Fragment>
     );
 
-    const deleteTabDialogFooter = (
-        <React.Fragment>
-            <Button label="No" icon="pi pi-times" className="p-button-text" onClick={hideDeleteTabDialog} />
-            <Button label="Yes" icon="pi pi-check" className="p-button-text" onClick={deleteTab} />
-        </React.Fragment>
-    );
-
-    const deleteTabsDialogFooter = (
-        <React.Fragment>
-            <Button label="No" icon="pi pi-times" className="p-button-text" onClick={hideDeleteTabsDialog} />
-            <Button label="Yes" icon="pi pi-check" className="p-button-text" onClick={deleteSelectedTabs} />
-        </React.Fragment>
-    );
-
+    // 表格
     return (
         <div className="datatable-crud-demo surface-card p-4 border-round shadow-2">
             <Toast ref={toast} />
+            <ConfirmDialog />
 
             <div className="text-3xl text-800 font-bold mb-4">备份标签页管理</div>
             <DataTable ref={dt} value={tabs} selection={selectedTabs} onSelectionChange={(e) => setSelectedTabs(e.value)}
-                       dataKey="id" paginator rows={30} rowsPerPageOptions={[10, 20, 30, 40,  50]}
+                       dataKey="id" paginator rows={30} rowsPerPageOptions={[10, 20, 30, 50, 70, 100]}
                        paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                        currentPageReportTemplate="Showing {first} to {last} of {totalRecords} pages"
                        globalFilter={globalFilter} header={header} responsiveLayout="scroll">
@@ -232,19 +282,6 @@ function App() {
                 </div>
             </Dialog>
 
-            <Dialog visible={deleteTabDialog} style={{ width: '450px' }} header="Confirm" modal footer={deleteTabDialogFooter} onHide={hideDeleteTabDialog}>
-                <div className="flex align-items-center justify-content-center">
-                    <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem'}} />
-                    {tab && <span>Are you sure you want to delete <b>{tab.name}</b>?</span>}
-                </div>
-            </Dialog>
-
-            <Dialog visible={deleteTabsDialog} style={{ width: '450px' }} header="Confirm" modal footer={deleteTabsDialogFooter} onHide={hideDeleteTabsDialog}>
-                <div className="flex align-items-center justify-content-center">
-                    <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem'}} />
-                    {tab && <span>Are you sure you want to delete the selected tabs?</span>}
-                </div>
-            </Dialog>
         </div>
     );
 }

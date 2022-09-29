@@ -1,6 +1,9 @@
+import $ from "jquery";
+import {modal} from "../lib/modal";
+
 modal.toast('注入复制脚本: 双击复制答案');
 // 复制答案
-function copyAnswer(e){
+export function copyAnswer(e){
     let ele = e.currentTarget;
     // 获得答案
     let txt = ele.innerText;

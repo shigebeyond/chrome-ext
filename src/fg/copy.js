@@ -1,5 +1,7 @@
+import $ from "jquery";
+
 // 复制文本到内存
-function copyTxt(txt){
+export function copyTxt(txt){
     /* // input不支持多行，textarea支持多行
     let textarea = document.createElement('textarea');
     document.body.appendChild(textarea);

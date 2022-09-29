@@ -2,6 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const glob = require('glob');
 const webpack = require('webpack');
 const resolve = require('resolve');
 const CopyWebpackPlugin = require('copy-webpack-plugin')
@@ -187,6 +188,9 @@ module.exports = function (webpackEnv) {
     return loaders;
   };
 
+  // 编译的版本号
+  let version = createEnvironmentHash(env.raw);
+  // console.log('build version = ' + version)
   return {
     target: ['browserslist'],
     // Webpack noise constrained to errors and warnings
@@ -203,7 +207,9 @@ module.exports = function (webpackEnv) {
     // This means they will be the "root" imports that are included in JS bundle.
     //entry: paths.appIndexJs,
     entry: {
-      'main': paths.appIndexJs,
+      main: paths.appIndexJs,
+      background: [ "./src/lib/youdao.js", "./src/lib/local-mq.js", "./src/lib/modal-bg.js", "./src/lib/store.js", "./src/options.js", "./src/lib/web-mq.js", "./src/lib/tabx.js", "./src/bg/menu.js"],
+      content: ["./src/lib/local-mq.js", "./src/lib/modal.js", "./src/fg/copy.js"],
     },
     output: {
       // The build folder.
@@ -235,7 +241,7 @@ module.exports = function (webpackEnv) {
     },
     cache: {
       type: 'filesystem',
-      version: createEnvironmentHash(env.raw),
+      version: version,
       cacheDirectory: paths.appWebpackCache,
       store: 'pack',
       buildDependencies: {
@@ -751,6 +757,21 @@ module.exports = function (webpackEnv) {
             },
           },
         }),
+      // 复制 manifest.json
+      new CopyWebpackPlugin([
+        {
+          from: './public/manifest.json',
+          to: 'manifest.json',
+          transform(content, path) {
+            content = content.toString()
+            let pattern = paths.appBuild + '/static/js/background.*.js'
+            let bg = glob.sync(pattern)
+            console.log("查找文件：" + pattern + ' : ' + bg)
+            content = content.replace('background.js', bg)
+            return content
+          }
+        },
+      ]),
     ].filter(Boolean),
     // Turn off performance processing because we utilize
     // our own hints via the FileSizeReporter

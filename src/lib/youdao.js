@@ -1,3 +1,7 @@
+import $ from "jquery";
+import md5 from 'crypto-js/md5';
+import modalBg from './modal-bg';
+
 /**
  * 有道词典
  * @param txt 单次
@@ -89,7 +93,7 @@ function youdaoTranslate(txt, callback){
 // 有道翻译-生成签名
 function generateSaltSign(txt) {
     // let navigatorAppVersion = '5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36';
-    // let ver = $.md5(navigatorAppVersion);
+    // let ver = md5(navigatorAppVersion);
     let ver = '84afaa1f696d79a939ece6748a3b1fcd';
     let ts = "" + (new Date).getTime()
       , salt = ts + parseInt(10 * Math.random(), 10);
@@ -97,6 +101,11 @@ function generateSaltSign(txt) {
         ts: ts,
         bv: ver,
         salt: salt,
-        sign: $.md5("fanyideskweb" + txt + salt + "Ygy_4c=r#e#4EX^NUGUc5")
+        sign: md5("fanyideskweb" + txt + salt + "Ygy_4c=r#e#4EX^NUGUc5")
     }
+}
+
+export {
+    youdaoDict,
+    youdaoTranslate
 }

@@ -1,4 +1,6 @@
+/* global chrome */
 // 用于在background中 调用content_script引入的弹窗
+import {subLocalMq} from './local-mq';
 
 var _confirmParam = null;//confirm弹窗参数，用于记录回调
 var modalBg = {
@@ -52,3 +54,5 @@ subLocalMq('modal-confirm', function(confirm_result){
         _confirmParam = null;
     }
 });
+
+export default modalBg;

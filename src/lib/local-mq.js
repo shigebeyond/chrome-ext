@@ -1,3 +1,5 @@
+/* global chrome */
+import $ from "jquery";
 
 // ---- 生产者者 ----
 //发布本地消息
@@ -47,4 +49,7 @@ function subLocalMq(channels, callback) {
   }
 }
 
-    
+export {
+    publishLocalMq,
+    subLocalMq
+}

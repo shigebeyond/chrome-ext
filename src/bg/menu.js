@@ -1,3 +1,12 @@
+/* global chrome */
+import $ from "jquery";
+import modalBg from '../lib/modal-bg';
+import store from '../lib/store';
+import tabx from '../lib/tabx';
+import wmq from '../lib/web-mq';
+import {read_options} from '../options';
+import {youdaoDict, youdaoTranslate} from '../lib/youdao';
+
 // 2 网页剪报
 chrome.contextMenus.create({
     title: '网页剪报',
@@ -92,9 +101,9 @@ if(autoConnectMqServer){
 function initMq(){
     // 连接mq server
     let mqServerUrl = read_options(false)['mqServerUrl'];
-    connectMqServer(mqServerUrl)
+    wmq.connectMqServer(mqServerUrl)
     // 监听mq：远程打开
-    subWebMq('remote_open', function(mq, own){
+    wmq.subWebMq('remote_open', function(mq, own){
         if(own){
             console.log('忽略自己调用的远程打开')
             return
@@ -112,7 +121,7 @@ chrome.contextMenus.create({
     contexts: ['page'], // page表示页面右键就会有这个菜单，如果想要当选中文字时才会出现此右键菜单，用：selection
     onclick: function (params) {
         let url = params['pageUrl'];
-        publishWebMq('remote_open', url)
+        wmq.publishWebMq('remote_open', url)
     }
 });
 
@@ -122,7 +131,15 @@ chrome.contextMenus.create({
     id: '7',//一级菜单的id
     contexts: ['page'], // page表示页面右键就会有这个菜单，如果想要当选中文字时才会出现此右键菜单，用：selection
     onclick: function (params) {
-        backupCurrTab();
+        chrome.tabs.getSelected(null, function (tab) {
+            if(!tabx.isHttpUrl(tab.url)){
+                alert('忽略非http协议的标签页')
+                return
+            }
+            store.appendStore("backupTabs", tabx.tab2entity(tab))
+            //modalBg.toast('备份成功', 1)
+            chrome.tabs.remove(tab.id)
+        })
     }
 });
 
@@ -132,36 +149,34 @@ chrome.contextMenus.create({
     id: '8',//一级菜单的id
     contexts: ['page'], // page表示页面右键就会有这个菜单，如果想要当选中文字时才会出现此右键菜单，用：selection
     onclick: function (params) {
-        backupAllTabs();
+        tabx.getAllHttpTabs(function (tabs) {
+            let entities = tabs.map(tabx.tab2entity)
+            store.appendStore("backupTabs", entities)
+            modalBg.confirm({
+                title: '提示',
+                message: '已备份成功, 是否关闭所有标签页?',
+                confirm: function () {
+                    // 关闭所有窗口
+                    tabx.closeAllWins()
+                    // 打开标签页管理页面
+                    openBackupTabsPage()
+                }
+            })
+        })
     }
 });
 
-// 9 恢复备份的标签页
+// 9 管理备份的标签页
 chrome.contextMenus.create({
-    title: '恢复备份的标签页',
+    title: '管理备份的标签页',
     id: '9',//一级菜单的id
     contexts: ['page'], // page表示页面右键就会有这个菜单，如果想要当选中文字时才会出现此右键菜单，用：selection
     onclick: function (params) {
-        recoverTabs();
+        openBackupTabsPage()
     }
 });
 
-// 10 管理备份的标签页
-chrome.contextMenus.create({
-    title: '管理备份的标签页',
-    id: '10',//一级菜单的id
-    contexts: ['page'], // page表示页面右键就会有这个菜单，如果想要当选中文字时才会出现此右键菜单，用：selection
-    onclick: function (params) {
-        openOrSwitchTab(chrome.runtime.getURL('index.html#/app/about'))
-    }
-});
-
-// 11 清空备份的标签页
-chrome.contextMenus.create({
-    title: '清空备份的标签页',
-    id: '11',//一级菜单的id
-    contexts: ['page'], // page表示页面右键就会有这个菜单，如果想要当选中文字时才会出现此右键菜单，用：selection
-    onclick: function (params) {
-        clearBackupTabs()
-    }
-});
+// 打开标签页管理页面
+function openBackupTabsPage(){
+    tabx.openOrSwitchTab('index.html#/app')
+}

@@ -1,3 +1,7 @@
+import $ from "jquery";
+import store from './lib/store';
+import {publishLocalMq} from './lib/local-mq';
+
 // 序列化表单
 $.fn.serializeObject = function()
 {
@@ -26,11 +30,10 @@ function save_options(opt = null, init = false) {
   // 获得配置
   if(opt == null){
     opt = $("form").serializeObject();
-
   }
   console.log('选项: ' + JSON.stringify(opt))
   // 保存
-  writeStore("options", opt)
+  store.writeStore("options", opt)
   
   if(!init){
     // 发消息：通知 web-mq.js 以便重新连接mq server
@@ -41,8 +44,8 @@ function save_options(opt = null, init = false) {
 }
 
 // 从 localStorage 读配置
-function read_options(fill_form = true) {
-  var opt = readStore("options")
+export function read_options(fill_form = true) {
+  var opt = store.readStore("options")
   if (!opt) {
     opt = init_options();
   }
@@ -62,7 +65,7 @@ function read_options(fill_form = true) {
 
 // 初始化配置
 function init_options(){
-  opt = {
+  let opt = {
     'notePostUrl': "http://localhost/note.php",
     'mqServerUrl': "http://127.0.0.1:16379",
     'autoConnectMqServer': true

@@ -1,3 +1,7 @@
+/* global chrome */
+import $ from "jquery";
+import {publishLocalMq} from '../lib/local-mq';
+
 /**
  * 弹窗
  * https://www.jq22.com/yanshi22096
@@ -164,4 +168,4 @@ function Eject(){
 }
 
 // 实例化
-var modal = new Eject();
+export const modal = new Eject();

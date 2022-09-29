@@ -1,4 +1,6 @@
-// mq处理，依赖于 socket.io.js
+import { io } from "socket.io-client";
+import {publishLocalMq, subLocalMq} from './local-mq';
+import modalBg from './modal-bg';
 
 // ---- 连接mq server ----
 // mq server是基于websocket+redis+nodejs实现web端消息推送： https://gitee.com/shigebeyond/webredis
@@ -6,7 +8,7 @@
 var socket = null;
 function connectMqServer(url) {
   console.log('连接消息服务器')
-  socket = io.connect(url);
+  socket = io(url);
   // socket.id属性标识socket
   // console.log(socket)
   socket.on('reconnecting', function (attemptNumber) {
@@ -52,7 +54,7 @@ function reconnectMqServer(url){
   connectMqServer(url);
 
   // 恢复监听
-  for(c in webMqCallbacks){
+  for(let c in webMqCallbacks){
     let callback = webMqCallbacks[c]
     subWebMq(c, callback)
   }
@@ -120,3 +122,6 @@ function unsubWebMq(channels) {
 
   socket.emit('unsubscribe', channels);
 }
+
+const wmqApi = {connectMqServer, reconnectMqServer, publishWebMq, subWebMq, unsubWebMq};
+export default wmqApi;

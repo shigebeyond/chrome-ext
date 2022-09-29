@@ -20,6 +20,7 @@ const publicUrlOrPath = getPublicUrlOrPath(
   require(resolveApp('package.json')).homepage,
   process.env.PUBLIC_URL
 );
+// console.log('publicUrlOrPath: ' + publicUrlOrPath) // 输出/
 
 const buildPath = process.env.BUILD_PATH || 'build';
 
@@ -57,18 +58,19 @@ module.exports = {
   appBuild: resolveApp(buildPath),
   appPublic: resolveApp('public'),
   appHtml: resolveApp('public/index.html'),
-  appIndexJs: resolveModule(resolveApp, 'page/index'),
+  appIndexJs: resolveModule(resolveApp, 'src/page/index'),
   appPackageJson: resolveApp('package.json'),
-  appSrc: resolveApp('page'),
+  appSrc: resolveApp('src'),
   appTsConfig: resolveApp('tsconfig.json'),
   appJsConfig: resolveApp('jsconfig.json'),
   yarnLockFile: resolveApp('yarn.lock'),
-  testsSetup: resolveModule(resolveApp, 'page/setupTests'),
-  proxySetup: resolveApp('page/setupProxy.js'),
+  testsSetup: resolveModule(resolveApp, 'src/page/setupTests'),
+  proxySetup: resolveApp('src/page/setupProxy.js'),
   appNodeModules: resolveApp('node_modules'),
   appWebpackCache: resolveApp('node_modules/.cache'),
   appTsBuildInfoFile: resolveApp('node_modules/.cache/tsconfig.tsbuildinfo'),
-  swSrc: resolveModule(resolveApp, 'page/service-worker'),
+  swSrc: resolveModule(resolveApp, 'src/page/service-worker'),
+  resolveApp,
   publicUrlOrPath,
 };
 
