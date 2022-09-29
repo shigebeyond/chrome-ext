@@ -10,17 +10,23 @@ function readStore(key){
 // 写单项
 function writeStore(key, value){
   var json = JSON.stringify(value);
-  localStorage["options"] = json;
+  localStorage[key] = json;
 }
 
 // 删单项
 function delStore(key){
-  localStorage.removeItem("options")
+  localStorage.removeItem(key)
 }
-
 
 // 清空所有
 function clearStores(){
   localStorage.clear();
+}
+
+export default {
+  readStore,
+  writeStore,
+  delStore,
+  clearStores
 }
 

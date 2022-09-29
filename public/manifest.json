@@ -2,16 +2,18 @@
     "manifest_version": 2,
     "name": "jktool",
     "version": "1.0.0",
-    "description": "Jktool Chrome extension.",
+    "description": "Jktool Chrome extension",
     "icons":
     {
-        "16": "img/icon.png",
-        "48": "img/icon.png"
+        "16": "logo.png",
+        "48": "logo.png"
     },
-    "options_page": "page/options.html",
+    "options_page": "options.html",
     "background":
     {
-        "scripts": ["js/lib/jquery-1.10.2.min.js", "js/lib/jquery.md5.js", "js/lib/youdao.js", "js/lib/local-mq.js", "js/lib/modal-bg.js", "js/lib/store.js", "js/options.js", "js/lib/socket.io.js", "js/lib/web-mq.js", "js/lib/tab.js", "js/bg/menu.js"]
+        "scripts": ["js/lib/jquery-1.10.2.min.js", "js/lib/jquery.md5.js", "js/lib/youdao.js", "js/lib/local-mq.js",
+            "js/lib/modal-bg.js", "js/lib/store.js", "js/options.js", "js/lib/socket.io.js", "js/lib/web-mq.js",
+            "js/lib/tab.js", "js/bg/backup-tab.js", "js/bg/menu.js"]
     },
     "content_scripts": [
         {

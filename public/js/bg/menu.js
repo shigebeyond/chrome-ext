@@ -1,29 +1,3 @@
-// 右键菜单
-// 1 知乎支持复制 -- 不用右键，直接在页面加载时就注入
-/*chrome.contextMenus.create({
-    title: '知乎支持复制',
-    id: '1',//一级菜单的id
-    onclick: function (params) {
-        chrome.tabs.getSelected(null, function (tab) {
-            // 测试，可以执行
-            //var code = "document.body.style.backgroundColor='gray';alert(window.copy)";
-            // 报错： $或window.copy is not defined
-            //var code = "var c = window.copy;$('span.RichText').onclick = function(e){    var txt = e.currentTarget.innerText;    c(txt);    alert('已复制');};";
-            // 要简化：直接使用file，而不是code
-            //var code = "var arr = document.getElementsByClassName('RichText');for (let item of arr) {    item.onclick = function(e){        var txt = e.currentTarget.innerText;        txt = txt.replace(/\n\n/g,'\n');        var input = document.createElement('input');        document.body.appendChild(input);        input.setAttribute('value', txt);        input.select();        document.execCommand('copy');        document.body.removeChild(input);        alert('已复制');    };}";
-            chrome.tabs.executeScript({
-                //code: code
-                file: 'js/lib/jquery-1.10.2.min.js'
-            });
-            chrome.tabs.executeScript(tab.id, {
-                //code: code
-                file: 'js/fg/zhihu-copy.js', // 相对于根目录
-            });
-        });
-    }
-});*/
-
-
 // 2 网页剪报
 chrome.contextMenus.create({
     title: '网页剪报',
@@ -67,11 +41,11 @@ chrome.contextMenus.create({
             // api
             youdaoDict(txt, function(result){
                 modalBg.confirm({
-                      title: '词典释义',
-                      message: result,
-                      confirm:function(){
-                            window.open("https://youdao.com/result?word=" + txt + "&lang=en", "有道词典", "");
-                      }
+                    title: '词典释义',
+                    message: result,
+                    confirm:function(){
+                        window.open("https://youdao.com/result?word=" + txt + "&lang=en", "有道词典", "");
+                    }
                 })
             })
         });
@@ -142,49 +116,52 @@ chrome.contextMenus.create({
     }
 });
 
-
-// 7 备份打开的网址
+// 7 备份当前标签页
 chrome.contextMenus.create({
-    title: '备份打开的网址',
+    title: '备份当前标签页',
     id: '7',//一级菜单的id
     contexts: ['page'], // page表示页面右键就会有这个菜单，如果想要当选中文字时才会出现此右键菜单，用：selection
     onclick: function (params) {
-        getAllTabUrls(function(urls){
-            writeStore("backupUrls", urls)
-        })
+        backupCurrTab();
     }
 });
 
-
-// 8 恢复备份的网址
+// 8 备份所有标签页
 chrome.contextMenus.create({
-    title: '恢复备份的网址',
+    title: '备份所有标签页',
     id: '8',//一级菜单的id
     contexts: ['page'], // page表示页面右键就会有这个菜单，如果想要当选中文字时才会出现此右键菜单，用：selection
     onclick: function (params) {
-        // 获得备份的网址
-        var urls = readStore("backupUrls")
-        //urls = ['https://open.chrome.360.cn/extension_dev/windows.html']
-        // alert(urls)
-        // 网址为空
-        if(typeof(urls) == "undefined" || urls.length == 0){
-            modalBg.toast('无备份网址')
-            return
-        }
-        // 新建视窗
-        chrome.windows.create({
-            url: urls
-        }, function(win) {
-            console.log('新建视窗: ' + JSON.stringify(win))
-            setTimeout(function(){
-                modalBg.confirm({
-                      title: '提示',
-                      message: '已恢复备份网址，是否删除备份数据',
-                      confirm:function(){
-                            delStore("backupUrls")
-                      }
-                })
-            }, 2000)
-        })
+        backupAllTabs();
+    }
+});
+
+// 9 恢复备份的标签页
+chrome.contextMenus.create({
+    title: '恢复备份的标签页',
+    id: '9',//一级菜单的id
+    contexts: ['page'], // page表示页面右键就会有这个菜单，如果想要当选中文字时才会出现此右键菜单，用：selection
+    onclick: function (params) {
+        recoverTabs();
+    }
+});
+
+// 10 管理备份的标签页
+chrome.contextMenus.create({
+    title: '管理备份的标签页',
+    id: '10',//一级菜单的id
+    contexts: ['page'], // page表示页面右键就会有这个菜单，如果想要当选中文字时才会出现此右键菜单，用：selection
+    onclick: function (params) {
+        openOrSwitchTab(chrome.runtime.getURL('index.html#/app/about'))
+    }
+});
+
+// 11 清空备份的标签页
+chrome.contextMenus.create({
+    title: '清空备份的标签页',
+    id: '11',//一级菜单的id
+    contexts: ['page'], // page表示页面右键就会有这个菜单，如果想要当选中文字时才会出现此右键菜单，用：selection
+    onclick: function (params) {
+        clearBackupTabs()
     }
 });

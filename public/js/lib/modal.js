@@ -100,14 +100,14 @@ function Eject(){
 		confirmBox.append(confirmBtn);
 		confirmBox.append(confirmcancel);
 		_this.show(confirmBox);
-	},
+	}
 	// 发送确认框的结果消息: modal-confirm
 	_this.sendConfirmMsg = function(result){
 		if(typeof(chrome.extension) == "undefined")
 			return
 		// 发消息: 通知 modal-bg.js
 		publishLocalMq('modal-confirm', result)
-	},
+	}
 	// toast提示
 	_this.toast = function(mes,time = 2){
 		var timer= null;
@@ -160,7 +160,7 @@ function Eject(){
 		inputBox.append(inputBtn);
 		inputBox.append(inputcancel);
 		_this.show(inputBox);
-	},
+	}
 }
 
 // 实例化
