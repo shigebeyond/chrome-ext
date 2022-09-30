@@ -21,7 +21,7 @@ chrome.contextMenus.create({
             if(typeof(txt) != "undefined")
                 note = note  + "\n" + txt;
             // 复制到剪切板
-            let code = note.replace(/"/g,'\"').replace(/\n/g,'\\n');
+            let code = note.replace(/"/g,'"').replace(/\n/g,'\\n');
             code = `copyTxt("${code}")`
             chrome.tabs.executeScript(tab.id, {
                 code: code

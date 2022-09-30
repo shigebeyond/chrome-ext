@@ -208,8 +208,9 @@ module.exports = function (webpackEnv) {
     //entry: paths.appIndexJs,
     entry: {
       main: paths.appIndexJs,
-      background: [ "./src/lib/youdao.js", "./src/lib/local-mq.js", "./src/lib/modal-bg.js", "./src/lib/store.js", "./src/options.js", "./src/lib/web-mq.js", "./src/lib/tabx.js", "./src/bg/menu.js"],
-      content: ["./src/lib/local-mq.js", "./src/lib/modal.js", "./src/fg/copy.js"],
+      background: ["./src/bg/index.js"],
+      content: ["./src/fg/index.js"],
+      'zhihu-copy': ["./src/fg/zhihu-copy.js"],
     },
     output: {
       // The build folder.
@@ -219,7 +220,8 @@ module.exports = function (webpackEnv) {
       // There will be one main bundle, and one file per asynchronous chunk.
       // In development, it does not produce real files.
       filename: isEnvProduction
-        ? 'static/js/[name].[contenthash:8].js'
+        //? 'static/js/[name].[contenthash:8].js' // 生成文件名带hash
+        ? 'static/js/[name].js' // 生成文件名不带hash
         : isEnvDevelopment && 'static/js/bundle.js',
       // There are also additional JS chunk files if you use code splitting.
       chunkFilename: isEnvProduction
@@ -756,22 +758,7 @@ module.exports = function (webpackEnv) {
               }),
             },
           },
-        }),
-      // 复制 manifest.json
-      new CopyWebpackPlugin([
-        {
-          from: './public/manifest.json',
-          to: 'manifest.json',
-          transform(content, path) {
-            content = content.toString()
-            let pattern = paths.appBuild + '/static/js/background.*.js'
-            let bg = glob.sync(pattern)
-            console.log("查找文件：" + pattern + ' : ' + bg)
-            content = content.replace('background.js', bg)
-            return content
-          }
-        },
-      ]),
+        })
     ].filter(Boolean),
     // Turn off performance processing because we utilize
     // our own hints via the FileSizeReporter

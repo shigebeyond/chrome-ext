@@ -1,5 +1,11 @@
-import $ from "jquery";
-import {modal} from "../lib/modal";
+// 由于他在 content_scripts 中只针对知乎网站，但通用网站已加载了copy.js，因此不能重复require
+/* global $ */
+/* global modal */
+/* global copyTxt */
+
+// import $ from "jquery";
+// import modal from "../lib/modal";
+// import {copyTxt} from "./copy";
 
 modal.toast('注入复制脚本: 双击复制答案');
 // 复制答案

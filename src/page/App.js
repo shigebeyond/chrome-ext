@@ -57,11 +57,11 @@ function App() {
         store.writeStore(storeKey, tabs)
     }
 
-    const openNew = () => {
+    /*const openNew = () => {
         setTab(emptyTab);
         setSubmitted(false);
         setTabDialog(true);
-    }
+    }*/
 
     const hideDialog = () => {
         setSubmitted(false);
@@ -211,7 +211,7 @@ function App() {
      */
     const urlBodyTemplate = (rowData) => {
         let domain = getDomain(rowData.url)
-        return <a href={rowData.url} target="_blank" className="w-7rem shadow-2">{domain}</a>
+        return <a href={rowData.url} target="_blank" rel="noreferrer" className="w-7rem shadow-2">{domain}</a>
     }
 
     /**

@@ -168,4 +168,5 @@ function Eject(){
 }
 
 // 实例化
-export const modal = new Eject();
+const modal = new Eject();
+export default modal

@@ -11,17 +11,17 @@
     "options_page": "options.html",
     "background":
     {
-        "scripts": ["background.js"]
+        "scripts": ["static/js/background.js"]
     },
     "content_scripts": [
         {
           "matches": ["*://*/*"],
-          "css": ["css/modal.css"],
-          "js": ["content.js"]
+          "css": ["static/css/modal.css"],
+          "js": ["static/js/content.js"]
         },
         {
           "matches": ["https://*.zhihu.com/*"],
-          "js": ["js/fg/zhihu-copy.js"]
+          "js": ["static/js/zhihu-copy.js"]
         }
     ],
     "permissions":
