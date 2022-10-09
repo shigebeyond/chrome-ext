@@ -7,7 +7,6 @@
 // import modal from "../lib/modal";
 // import {copyTxt} from "./copy";
 
-modal.toast('注入复制脚本: 双击复制答案');
 // 复制答案
 export function copyAnswer(e){
     let ele = e.currentTarget;
@@ -46,6 +45,6 @@ function copyZhihu(){
     // 支持动态新元素
     // 回答是 span.RichText， 文章是 div.RichText
     $("body").on("dblclick", ".RichText", copyAnswer);
+    modal.toast('注入复制脚本: 双击复制答案');
 };
 copyZhihu();
-
