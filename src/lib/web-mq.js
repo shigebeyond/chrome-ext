@@ -1,6 +1,7 @@
 import { io } from "socket.io-client";
 import {publishLocalMq, subLocalMq} from './local-mq';
 import modalBg from './modal-bg';
+import store from './store';
 
 // ---- 连接mq server ----
 // mq server是基于websocket+redis+nodejs实现web端消息推送： https://gitee.com/shigebeyond/webredis
@@ -36,14 +37,16 @@ function connectMqServer(url) {
   return socket;
 }
 
-// 监听消息: 接收 options.js 发的消息，以便重新连接mq server
-subLocalMq('mqServerUrlChange', reconnectMqServer);
+// 监听选项存储的变化: 主要是识别 mqServerUrl 变化， 以便重新连接
+window.addEventListener('storage', reconnectMqServer, false);
 
 // 重新连接
 function reconnectMqServer(url){
   if(socket == null) // 没连接过
     return
   
+  // 读配置的 mqServerUrl
+  let url = store.readOption('mqServerUrl')
   if(url == socket.io.uri){ // server没变
     console.log('消息服务器地址没变')
     return

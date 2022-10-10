@@ -27,7 +27,7 @@ chrome.contextMenus.create({
                 code: code
             });
             // 提交后端
-            let post_url = read_options(false)['notePostUrl'];
+            let post_url = store.readOption('notePostUrl');
             $.post(post_url, {note: note}, function(result){
                 modalBg.toast(result)
             });
@@ -91,7 +91,7 @@ chrome.contextMenus.create({
 });
 
 // 自动连接消息服务器
-let autoConnectMqServer = read_options(false)['autoConnectMqServer'];
+let autoConnectMqServer = store.readOption('autoConnectMqServer');
 if(autoConnectMqServer){
     console.log('自动连接消息服务器')
     initMq()
@@ -100,7 +100,7 @@ if(autoConnectMqServer){
 // 初始化mq处理
 function initMq(){
     // 连接mq server
-    let mqServerUrl = read_options(false)['mqServerUrl'];
+    let mqServerUrl = store.readOption('mqServerUrl');
     wmq.connectMqServer(mqServerUrl)
     // 监听mq：远程打开
     wmq.subWebMq('remote_open', function(mq, own){
@@ -178,5 +178,5 @@ chrome.contextMenus.create({
 
 // 打开标签页管理页面
 function openBackupTabsPage(){
-    tabx.openOrSwitchTab('index.html#/app')
+    tabx.openOrSwitchTab('index.html#/tabList')
 }

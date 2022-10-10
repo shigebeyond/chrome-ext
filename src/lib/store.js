@@ -34,6 +34,12 @@ function clearStores(){
   localStorage.clear();
 }
 
+// 从 localStorage 读配置
+function readOption(key) {
+  var opt = store.readStore("options")
+  return opt[key]
+}
+
 export default {
   readStore,
   writeStore,

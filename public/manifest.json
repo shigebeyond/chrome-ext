@@ -8,10 +8,11 @@
         "16": "logo.png",
         "48": "logo.png"
     },
-    "options_page": "options.html",
+    "options_page": "index.html#/optionForm",
     "background":
     {
-        "scripts": ["static/js/background.js"]
+        "scripts": ["static/js/background.js"],
+        "persistent": true
     },
     "content_scripts": [
         {
