@@ -9,6 +9,7 @@
         "48": "logo.png"
     },
     "options_page": "index.html#/optionForm",
+    "devtools_page": "devtools.html",
     "background":
     {
         "scripts": ["static/js/background.js"],
