@@ -19,7 +19,7 @@ import store from '../lib/store'
 // 存储的key
 const storeKey = "backupTabs";
 
-function TagList() {
+function TabList() {
     let emptyTab = {
         id: 0,
         name: '',
@@ -68,7 +68,7 @@ function TagList() {
         setTabDialog(false);
     }
 
-    function showToast(msg) {
+    const showToast = (msg) => {
         toast.current.show({severity: 'success', summary: 'Successful', detail: msg, life: 3000});
     }
 
@@ -286,4 +286,4 @@ function TagList() {
     );
 }
 
-export default TagList;
+export default TabList;
