@@ -4,7 +4,6 @@ import modalBg from '../lib/modal-bg';
 import store from '../lib/store';
 import tabx from '../lib/tabx';
 import wmq from '../lib/web-mq';
-import {read_options} from '../options';
 import {youdaoDict, youdaoTranslate} from '../lib/youdao';
 
 // 2 网页剪报

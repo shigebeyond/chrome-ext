@@ -36,7 +36,7 @@ function clearStores(){
 
 // 从 localStorage 读配置
 function readOption(key) {
-  var opt = store.readStore("options")
+  var opt = readStore("options")
   return opt[key]
 }
 
@@ -45,5 +45,6 @@ export default {
   writeStore,
   appendStore,
   delStore,
-  clearStores
+  clearStores,
+  readOption
 }

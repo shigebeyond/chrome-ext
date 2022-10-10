@@ -41,7 +41,7 @@ function connectMqServer(url) {
 window.addEventListener('storage', reconnectMqServer, false);
 
 // 重新连接
-function reconnectMqServer(url){
+function reconnectMqServer(){
   if(socket == null) // 没连接过
     return
   
