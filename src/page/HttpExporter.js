@@ -23,23 +23,47 @@ function HttpExporter() {
         status: ''
     };
 
-    const [reqs, setReqs] = useState(null);
+    const [reqs, setReqs] = useState([]);
     const [req, setReq] = useState(emptyReq);
     const [selectedReqs, setSelectedReqs] = useState(null);
     const [globalFilter, setGlobalFilter] = useState(null);
     const toast = useRef(null);
     const dt = useRef(null);
+    const _reqs = [] // 记录历史的请求
 
     useEffect(() => {
-        // let data = getReqs()
-        // setReqs(data)
-
         // 监听http请求
-        chrome.devtools.network.onRequestFinished.addListener(request => {
-            console.log("收到请求")
-            console.log(request)
+        chrome.devtools.network.onRequestFinished.addListener(data => {
+            //debugger; // 无法调试，index.html 跟 main.js 源码加载不出来
+            // showToast(JSON.stringify(data))
+            console.log("---- start ")
+            console.log(data)
+            let {request, response} = data;
+            request.status = response.status
+            request.id = createId()
+
+            // 更新状态：注意 reqs 不是[]，不能直接push()
+            // let _reqs = [...reqs] // bug: 由于请求太快了, 在reqs没更新之前，就收到新的请求，因此会不停的覆盖而丢失之前的修改
+            _reqs.push(request)
+            console.log(_reqs)
+            console.log("---- end ")
+            setReqs(_reqs) // bug: 不能刷新页面，可能是因为不同进程
         });
+
+        // 定时刷新页面
+        /*setInterval(function(){
+            setReqs(_reqs) // 无效
+        },1000)*/
     }, []);
+
+    const createId = () => {
+        let id = '';
+        let chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        for (let i = 0; i < 5; i++) {
+            id += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return id;
+    }
 
     const showToast = (msg) => {
         toast.current.show({severity: 'success', summary: 'Successful', detail: msg, life: 3000});
@@ -103,7 +127,7 @@ function HttpExporter() {
      */
     const urlBodyTemplate = (rowData) => {
         let domain = getDomain(rowData.url)
-        return <a href={rowData.url} target="_blank" rel="noreferrer" className="w-7rem shadow-2">{domain}</a>
+        return <a href={rowData.url} target="_blank" rel="noreferrer" className="w-7rem shadow-2">{rowData.url}</a>
     }
 
     /**
@@ -141,16 +165,16 @@ function HttpExporter() {
             <Toast ref={toast} />
             <ConfirmDialog />
 
-            <div className="text-3xl text-800 font-bold mb-4">备份标签页管理</div>
+            <div className="text-3xl text-800 font-bold mb-4">Http请求导出</div>
             <DataTable ref={dt} value={reqs} selection={selectedReqs} onSelectionChange={(e) => setSelectedReqs(e.value)}
                        dataKey="id" paginator rows={30} rowsPerPageOptions={[10, 20, 30, 50, 70, 100]}
                        paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                        currentPageReportTemplate="Showing {first} to {last} of {totalRecords} pages"
                        globalFilter={globalFilter} header={header} responsiveLayout="scroll">
                 <Column selectionMode="multiple" headerStyle={{ width: '3rem' }} exportable={false}></Column>
-                <Column field="name" header="Name" style={{ minWidth: '16rem' }}></Column>
+                <Column field="method" header="method" style={{ minWidth: '16rem' }}></Column>
                 <Column field="url" header="Url" body={urlBodyTemplate}></Column>
-                <Column field="date" header="Date" sortable style={{ width: '12rem' }}></Column>
+                <Column field="status" header="status" sortable style={{ width: '12rem' }}></Column>
                 <Column body={actionBodyTemplate} exportable={false} style={{ minWidth: '8rem' }}></Column>
             </DataTable>
         </div>
