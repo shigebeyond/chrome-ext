@@ -1,12 +1,12 @@
+/* global chrome */
+
 // devtools.js
+
 // 创建扩展面板
 chrome.devtools.panels.create(
-  // 扩展面板显示名称
-  "HttpBoot",
-  // 扩展面板icon，并不展示
-  "logo.png",
-  // 扩展面板页面
-  "index.html#/httpPanel",
+  "HttpExporter", // 面板名
+  "logo.png", // 面板icon
+  "index.html#/httpExporter", // 面板页面
   function (panel) {
     console.log("自定义HttpBoot面板创建成功！");
   }

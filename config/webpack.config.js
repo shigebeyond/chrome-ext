@@ -211,6 +211,7 @@ module.exports = function (webpackEnv) {
       background: ["./src/bg/index.js"],
       content: ["./src/fg/index.js"],
       'zhihu-copy': ["./src/fg/zhihu-copy.js"],
+      devtool: ["./src/dt/index.js"],
     },
     output: {
       // The build folder.

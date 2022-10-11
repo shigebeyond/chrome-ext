@@ -3,14 +3,14 @@ import { Routes, Route, Outlet, Link } from "react-router-dom";
 
 // import './App.css';
 import TabList from './TabList'
-import HttpPanel from './HttpPanel'
+import HttpExporter from './HttpExporter'
 
 // 路由参考 https://github.com/remix-run/react-router/blob/dev/examples/basic/src/App.tsx
 export default function App() {
   return (
     <Routes>
       <Route path="/tabList" element={<TabList />} />
-      <Route path="/httpPanel" element={<HttpPanel />} />
+      <Route path="/httpExporter" element={<HttpExporter />} />
       <Route path="*" element={<Index />} />
     </Routes>
   );
@@ -25,7 +25,7 @@ function Index() {
         <Link to="/tabList">跳转到: 备份标签页管理</Link>
       </p>
       <p>
-        <Link to="/httpPanel">跳转到: 选项配置</Link>
+        <Link to="/httpExporter">跳转到: 选项配置</Link>
       </p>
     </div>
   );

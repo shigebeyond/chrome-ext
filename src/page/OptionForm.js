@@ -36,7 +36,7 @@ function OptionForm() {
         store.writeStore(storeKey, data)
         showToast('保存成功');
 
-        reset();
+        setTimerout(reset, 500);
     };
 
     const getFormErrorMessage = (name) => {
