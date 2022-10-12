@@ -36,7 +36,7 @@ function OptionForm() {
         store.writeStore(storeKey, data)
         showToast('保存成功');
 
-        setTimeout(reset, 500);
+        //setTimeout(reset, 500); // 不用reset到上一次的数据
     };
 
     const getFormErrorMessage = (name) => {
