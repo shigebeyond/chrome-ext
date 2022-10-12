@@ -29,32 +29,34 @@ function HttpExporter() {
     const [globalFilter, setGlobalFilter] = useState(null);
     const toast = useRef(null);
     const dt = useRef(null);
-    const _reqs = [] // 记录历史的请求
 
     useEffect(() => {
         // 监听http请求
         chrome.devtools.network.onRequestFinished.addListener(data => {
             //debugger; // 无法调试，index.html 跟 main.js 源码加载不出来
             // showToast(JSON.stringify(data))
-            console.log("---- start ")
-            console.log(data)
+            // console.log("监听到http请求:")
+            // console.log(data)
+
+            // 拼接请求对象
             let {request, response} = data;
             request.status = response.status
             request.id = createId()
 
-            // 更新状态：注意 reqs 不是[]，不能直接push()
-            // let _reqs = [...reqs] // bug: 由于请求太快了, 在reqs没更新之前，就收到新的请求，因此会不停的覆盖而丢失之前的修改
-            _reqs.push(request)
-            console.log(_reqs)
-            console.log("---- end ")
-            setReqs(_reqs) // bug: 不能刷新页面，可能是因为不同进程
+            // 记录请求
+            addReq(request)
         });
-
-        // 定时刷新页面
-        /*setInterval(function(){
-            setReqs(_reqs) // 无效
-        },1000)*/
     }, []);
+
+    //　新加请求
+    const addReq = (request) => {
+        //setReqs(_reqs) // wrong: 直接改状态值 -- 获得不了最新的状态值，每次获得状态值都是[]，导致改写后数据错误，只显示最新一条记录，没有其他记录
+        setReqs(reqs => {
+            const _reqs = [...reqs] // 记录历史的请求
+            _reqs.push(request)
+            return _reqs
+        })
+    }
 
     const createId = () => {
         let id = '';
@@ -170,7 +172,7 @@ function HttpExporter() {
                        dataKey="id" paginator rows={30} rowsPerPageOptions={[10, 20, 30, 50, 70, 100]}
                        paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                        currentPageReportTemplate="Showing {first} to {last} of {totalRecords} pages"
-                       globalFilter={globalFilter} header={header} responsiveLayout="scroll">
+                       globalFilter={globalFilter} globalFilterFields={['url']}header={header} responsiveLayout="scroll">
                 <Column selectionMode="multiple" headerStyle={{ width: '3rem' }} exportable={false}></Column>
                 <Column field="method" header="method" style={{ minWidth: '16rem' }}></Column>
                 <Column field="url" header="Url" body={urlBodyTemplate}></Column>
