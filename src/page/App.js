@@ -24,10 +24,13 @@ function Index() {
     <div>
       <h2>入口</h2>
       <p>
-        <Link to="/tabList">跳转到: 备份标签页管理</Link>
+        <Link to="/tabList">备份标签页管理</Link>
       </p>
       <p>
-        <Link to="/optionForm">跳转到: 选项配置</Link>
+        <Link to="/optionForm">选项配置</Link>
+      </p>
+      <p>
+        <Link to="/httpExporter">测试模式下的devtools中httpExporter面板</Link>
       </p>
     </div>
   );

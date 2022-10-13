@@ -209,7 +209,7 @@ function TabList() {
      * @param rowData
      * @returns {JSX.Element}
      */
-    const urlBodyTemplate = (rowData) => {
+    const renderUrl = (rowData) => {
         let domain = getDomain(rowData.url)
         return <a href={rowData.url} target="_blank" rel="noreferrer" className="w-7rem shadow-2">{domain}</a>
     }
@@ -219,7 +219,7 @@ function TabList() {
      * @param rowData
      * @returns {JSX.Element}
      */
-    const actionBodyTemplate = (rowData) => {
+    const renderActions = (rowData) => {
         return (
             <React.Fragment>
                 <Button icon="pi pi-pencil" className="p-button-rounded p-button-success mr-2" onClick={() => editTab(rowData)} />
@@ -265,12 +265,12 @@ function TabList() {
                        globalFilter={globalFilter} header={header} responsiveLayout="scroll">
                 <Column selectionMode="multiple" headerStyle={{ width: '3rem' }} exportable={false}></Column>
                 <Column field="name" header="Name" style={{ minWidth: '16rem' }}></Column>
-                <Column field="url" header="Url" body={urlBodyTemplate}></Column>
+                <Column field="url" header="Url" body={renderUrl}></Column>
                 <Column field="date" header="Date" sortable style={{ width: '12rem' }}></Column>
-                <Column body={actionBodyTemplate} exportable={false} style={{ minWidth: '8rem' }}></Column>
+                <Column body={renderActions} exportable={false} style={{ minWidth: '8rem' }}></Column>
             </DataTable>
 
-            <Dialog visible={tabDialog} breakpoints={{'960px': '75vw', '640px': '100vw'}} style={{width: '40vw'}} header="Tab Details" modal className="p-fluid" footer={tabDialogFooter} onHide={hideDialog}>
+            <Dialog visible={tabDialog} breakpoints={{'960px': '75vw', '640px': '100vw'}} style={{width: '40vw'}} header="标签页详情" modal className="p-fluid" footer={tabDialogFooter} onHide={hideDialog}>
                 <div className="field">
                     <label htmlFor="name">Name</label>
                     <InputText id="name" value={tab.name} onChange={(e) => onInputChange(e, 'name')} required autoFocus className={classNames({ 'p-invalid': submitted && !tab.name })} />
