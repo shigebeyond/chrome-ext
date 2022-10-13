@@ -1,4 +1,4 @@
-import querystring from querystring;
+// import querystring from querystring;
 
 /**
  * http请求序列化器 
@@ -58,7 +58,7 @@ class HttpSerializer {
         if(data.length == 0)
             return ''
 
-        let c = buildCurlQuery(data, '; ')
+        let c = this.buildCurlQuery(data, '; ')
         return `-H 'cookie: ${c}'`
     }
 

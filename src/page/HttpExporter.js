@@ -11,20 +11,21 @@ import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 import { Tooltip } from 'primereact/tooltip';
 import { InputText } from 'primereact/inputtext';
 import { Divider } from 'primereact/divider';
-import { buildCurl } from '../lib/curl';
+import HttpSerializer from '../lib/HttpSerializer';
+import { copyTxt } from '../fg/copy';
 import 'primereact/resources/themes/saga-blue/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
 import 'primeflex/primeflex.css';
+import './component.css';
 
-// 表格过滤 https://www.primefaces.org/primereact/datatable/filter/
-// demo https://juejin.cn/post/6844903748142104589
 function HttpExporter() {
     let emptyReq = {
         id: 0,
         method: '',
         url: '',
         status: '',
+        type: 'document',
         headers: [],
         queryString: [],
         cookies: []
@@ -48,9 +49,10 @@ function HttpExporter() {
                 // console.log(data)
 
                 // 拼接请求对象
-                let {request, response} = data;
+                let {request, response, _resourceType} = data;
                 request.status = response.status
                 request.id = createId()
+                request.type = _resourceType
 
                 // 记录请求
                 addReq(request)
@@ -64,6 +66,7 @@ function HttpExporter() {
                     method: 'get',
                     url: 'https://www.baidu.com/s?ie=UTF-8&wd=' + id,
                     status: 200,
+                    type: 'document',
                     headers: [],
                     queryString: [],
                     cookies: []
@@ -157,15 +160,36 @@ function HttpExporter() {
         setReqDialog(false);
     }
 
+    const copy = (txt, label) => {
+        copyTxt(txt)
+        showToast('复制' + label + '成功')
+    }
+
+    // 复制curl
     const copyCurl = (req) => {
-        r = buildCurl()
-        window.copy('hello');
+        let s = new HttpSerializer(req)
+        let r = s.toCurl()
+        copy(r, 'Curl');
+    }
+
+    // 复制HttpRunner
+    const copyHttpRunner = (req) => {
+        let s = new HttpSerializer(req)
+        let r = s.toCurl()
+        copy(r, 'HttpRunner');
+    }
+
+    // 复制HttpBoot
+    const copyHttpBoot = (req) => {
+        let s = new HttpSerializer(req)
+        let r = s.toCurl()
+        copy(r, 'HttpBoot');
     }
 
     const renderField = (req, field) => {
         let r = ''
         for(let v of req[field]){
-            de = v.value
+            let de = v.value
             if(field == 'queryString')
                 de = decodeURIComponent(v.value)
             r += `<strong>${v.name}</strong>: ${de}<br/>`;
@@ -184,11 +208,16 @@ function HttpExporter() {
      * @returns {JSX.Element}
      */
     const renderUrl = (rowData) => {
+        let url = rowData.url
         // 获得uri
-        let uri = getUri(rowData.url)
-        //截取指定长度, 并加上省略号
-        uri = uri.length > 40 ? uri.slice(0, 40) + "..." : uri;
-        return <a href={rowData.url} target="_blank" rel="noreferrer" className="w-7rem shadow-2 tip-target" data-pr-tooltip={rowData.url}>{uri}</a>
+        let uri = getUri(url)
+        if(uri == ''){ // 空则取域名
+            uri = getDomain(url)
+        }else{ //截取指定长度, 并加上省略号
+            let len = 50
+            uri = uri.length > len ? uri.slice(0, len) + "..." : uri;
+        }
+        return <a href={url} target="_blank" rel="noreferrer" className="w-7rem shadow-2 tip-target" data-pr-tooltip={url}>{uri}</a>
     }
 
     /**
@@ -199,10 +228,11 @@ function HttpExporter() {
     const renderActions = (rowData) => {
         return (
             <React.Fragment>
-                <Button label="详情" onClick={() => showReq(rowData)} />
-                <Button label="Curl" className="p-button-success" tooltip="复制Curl命令" () => copyCurl(rowData) />
-                <Button label="HttpRunner" className="p-button-info" tooltip="复制HttpRunner命令" () => copyHttpRunner(rowData) />
-                <Button label="HttpBoot" className="p-button-warning" tooltip="复制HttpBoot命令" () => copyHttpBoot(rowData) />
+                <Button label="打印" className="" onClick={() => console.log(rowData)} />
+                <Button label="详情" className="p-button-secondary" onClick={() => showReq(rowData)} />
+                <Button label="复制Curl" className="p-button-success" tooltip="复制Curl命令" onClick={() => copyCurl(rowData)} />
+                <Button label="复制HttpRunner" className="p-button-info" tooltip="复制HttpRunner yaml脚本" onClick={() => copyHttpRunner(rowData)} />
+                <Button label="复制HttpBoot" className="p-button-warning" tooltip="复制HttpBoot yaml脚本" onClick={() => copyHttpBoot(rowData)} />
             </React.Fragment>
         );
     }
@@ -215,7 +245,7 @@ function HttpExporter() {
                 <InputText type="search" onInput={(e) => setGlobalFilter(e.target.value)} placeholder="Search..." className="w-full lg:w-auto" />
             </span>
             <div className="mt-3 md:mt-0 flex justify-content-end">
-                <Button icon="pi pi-trash" className="p-button-danger mr-2 p-button-rounded" onClick={test} disabled={!selectedReqs || !selectedReqs.length} tooltip="Delete" tooltipOptions={{position: 'bottom'}} />
+                <Button icon="pi pi-trash" className="p-button-danger mr-2 p-button-rounded" onClick={exportCSV} disabled={!selectedReqs || !selectedReqs.length} tooltip="Delete" tooltipOptions={{position: 'bottom'}} />
                 <Button icon="pi pi-external-link" className="p-button-warning p-button-rounded" onClick={openSelected} disabled={!selectedReqs || !selectedReqs.length} tooltip="Open" tooltipOptions={{position: 'bottom'}} />
                 <Button icon="pi pi-upload" className="p-button-help p-button-rounded" onClick={exportCSV} tooltip="Export" tooltipOptions={{position: 'bottom'}} />
             </div>
@@ -246,6 +276,7 @@ function HttpExporter() {
                 <Column selectionMode="multiple" headerStyle={{ width: '3rem' }} exportable={false}></Column>
                 <Column field="method" header="method" style={{ width: '4rem' }}></Column>
                 <Column field="url" header="url" body={renderUrl}></Column>
+                <Column field="type" header="type" style={{ width: '4rem' }}></Column>
                 <Column field="status" header="status" style={{ width: '4rem' }}></Column>
                 <Column body={renderActions} exportable={false} style={{ minWidth: '8rem' }}></Column>
             </DataTable>

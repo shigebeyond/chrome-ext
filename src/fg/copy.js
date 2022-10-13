@@ -12,7 +12,8 @@ export function copyTxt(txt){
     */
     let textarea = $("#textarea");
     if(textarea.length == 0){
-        textarea = $("<textarea id='textarea'></textarea>");
+        // 如果样式设为 display:none，则复制不了
+        textarea = $("<textarea id='textarea' style='height:0px;'></textarea>");
         $(document.body).append(textarea);
     }
     textarea.val(txt);
