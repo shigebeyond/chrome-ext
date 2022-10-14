@@ -22,7 +22,8 @@ class HttpSerializer {
     {
         let str = "";
         for (let v of data) {
-            str += `-H '${v.name}:${encodeURIComponent(v.value)}' `;
+            // 值不需要 encodeURIComponent()
+            str += `-H '${v.name}:${v.value}' `;
         }
         return str;
     }
@@ -40,14 +41,15 @@ class HttpSerializer {
         // return querystring.stringify(data);
         let str = "";
         for (let v of data) {
-            str += `${v.name}${kvcon}${encodeURIComponent(v.value)}${sep}`;
+            // 值不需要 encodeURIComponent()
+            str += `${v.name}${kvcon}${v.value}${sep}`;
         }
         // 去掉最后的分隔符
-        //return _.trimEnd(str, sep);
-        if(str.slice(-sep.length) == sep){
+        /*if(str.slice(-sep.length) == sep){
             return str.slice(0, -sep.length)
         }
-        return str
+        return str*/
+        return _.trimEnd(str, sep);
     }
 
     /**
@@ -66,6 +68,15 @@ class HttpSerializer {
     }
 
     /**
+     * 是否压缩
+     */
+    isGzip(){
+        // 匹配请求头 Accept-Encoding:gzip, deflate
+        let h = _.find(this.req.headers, h => h.name == 'Accept-Encoding'});
+        return h && h.value.indexOf('gzip') > -1
+    }
+
+    /**
     * 转为 curl命令
     * @return string
     */
@@ -78,9 +89,10 @@ class HttpSerializer {
         // let query = this.buildCurlQuery(this.req.queryString);
         let data = '';
         if(isPost){
-            data = '-d ' + this.req.postData.text;
+            data = `-d '${this.req.postData.text}'`;
         }
-        return `curl ${flag} ${headers} ${cookie} ${data} '${this.req.url}'`;
+        let gzip = isGzip() ? '--compressed' : ''
+        return `curl ${flag} '${this.req.url}' ${headers} ${cookie} ${data} ${gzip}`;
     }
 
     /**
