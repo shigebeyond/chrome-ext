@@ -12,6 +12,7 @@ import { Tooltip } from 'primereact/tooltip';
 import { InputText } from 'primereact/inputtext';
 import { Divider } from 'primereact/divider';
 import _ from 'lodash';
+import FileSaver from 'file-saver'
 import HttpSerializer from '../lib/HttpSerializer';
 import { copyTxt } from '../fg/copy';
 import 'primereact/resources/themes/saga-blue/theme.css';
@@ -42,6 +43,7 @@ function HttpExporter() {
     const [globalFilter, setGlobalFilter] = useState(null);
     const toast = useRef(null);
     const dt = useRef(null);
+    let id = 1
 
     useEffect(() => {
         if(typeof(chrome.devtools) != "undefined"){ // 正式
@@ -57,6 +59,7 @@ function HttpExporter() {
                 request.status = response.status
                 request.id = createId()
                 request.type = _resourceType
+                //console.log(request.url)
 
                 // 记录请求
                 addReq(request)
@@ -97,12 +100,13 @@ function HttpExporter() {
     }
 
     const createId = () => {
-        let id = '';
+        /*let id = '';
         let chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
         for (let i = 0; i < 5; i++) {
             id += chars.charAt(Math.floor(Math.random() * chars.length));
         }
-        return id;
+        return id;*/
+        return id++;
     }
 
 
@@ -155,6 +159,23 @@ function HttpExporter() {
     }
 
     /**
+     * 删除单个请求
+     */
+    const deleteReq = (req) => {
+        let _reqs = reqs.filter(val => val.id !== req.id);
+        setReqs(_reqs);
+    }
+
+    /**
+     * 删除选中的多个标签页
+     */
+    const deleteSelectedReqs = () => {
+        let _reqs = reqs.filter(val => !selectedReqs.includes(val));
+        setReqs(_reqs);
+        setSelectedReqs(null);
+    }
+
+    /**
      * 显示单个请求的弹窗
      * @param req
      */
@@ -199,6 +220,48 @@ function HttpExporter() {
         copy(r, 'HttpBoot');
     }
 
+    /**
+     * 导出curl
+     */
+    const exportCurl = (reqs) => {
+        let r = '';
+        for(let req of reqs){
+            let s = new HttpSerializer(req)
+            r += s.toCurl() + "\n"
+        }
+        exportFile(r, 'curl.txt');
+    }
+
+    /**
+     * 导出HttpRunner
+     */
+    const exportHttpRunner = (reqs) => {
+        let r = '';
+        for(let req of reqs){
+            let s = new HttpSerializer(req)
+            r += s.toHttpRunnerYaml() + "\n"
+        }
+        exportFile(r, 'HttpRunner.yml');
+    }
+
+    /**
+     * 导出HttpBoot
+     */
+    const exportHttpBoot = (reqs) => {
+        let r = '';
+        for(let req of reqs){
+            let s = new HttpSerializer(req)
+            r += s.toHttpBootYaml() + "\n"
+        }
+        exportFile(r, 'HttpBoot.yml');
+    }
+
+    const exportFile = (txt, file) => {
+        file = file.replace('.', '- '+ (new Date().getTime()) + '.') // 文件名添加时间戳
+        console.log(txt)
+        let blob = new Blob([txt], {type: 'text/plain'});
+        FileSaver.saveAs(blob, file);
+    } 
 
     /**
      * 渲染请求的某个字段
@@ -249,11 +312,12 @@ function HttpExporter() {
     const renderActions = (row) => {
         return (
             <React.Fragment>
+                <Button icon="pi pi-trash" className="p-button-danger" onClick={() => deleteReq(row)} />
                 <Button label="打印" className="" onClick={() => console.log(row)} />
                 <Button label="详情" className="p-button-secondary" onClick={() => showReq(row)} />
-                <Button label="复制Curl" className="p-button-success" tooltip="复制Curl命令" onClick={() => copyCurl(row)} />
-                <Button label="复制HttpRunner" className="p-button-info" tooltip="复制HttpRunner yaml脚本" onClick={() => copyHttpRunner(row)} />
-                <Button label="复制HttpBoot" className="p-button-warning" tooltip="复制HttpBoot yaml脚本" onClick={() => copyHttpBoot(row)} />
+                <Button label="复制Curl" className="p-button-success" onClick={() => copyCurl(row)} tooltip="复制Curl命令" tooltipOptions={{position: 'bottom'}} />
+                <Button label="复制HttpRunner" className="p-button-info" onClick={() => copyHttpRunner(row)} tooltip="复制HttpRunner yaml脚本" tooltipOptions={{position: 'bottom'}} />
+                <Button label="复制HttpBoot" className="p-button-warning" onClick={() => copyHttpBoot(row)} tooltip="复制HttpBoot yaml脚本" tooltipOptions={{position: 'bottom'}} />
             </React.Fragment>
         );
     }
@@ -266,9 +330,10 @@ function HttpExporter() {
                 <InputText type="search" onInput={(e) => setGlobalFilter(e.target.value)} placeholder="Search..." className="w-full lg:w-auto" />
             </span>
             <div className="mt-3 md:mt-0 flex justify-content-end">
-                <Button icon="pi pi-trash" className="p-button-danger mr-2 p-button-rounded" onClick={exportCSV} disabled={!selectedReqs || !selectedReqs.length} tooltip="Delete" tooltipOptions={{position: 'bottom'}} />
-                <Button icon="pi pi-external-link" className="p-button-warning p-button-rounded" onClick={openSelected} disabled={!selectedReqs || !selectedReqs.length} tooltip="Open" tooltipOptions={{position: 'bottom'}} />
-                <Button icon="pi pi-upload" className="p-button-help p-button-rounded" onClick={exportCSV} tooltip="Export" tooltipOptions={{position: 'bottom'}} />
+                <Button icon="pi pi-trash" className="p-button-danger" onClick={deleteSelectedReqs} disabled={!selectedReqs || !selectedReqs.length} tooltip="删除" tooltipOptions={{position: 'bottom'}} />
+                <Button label="导出Curl" className="p-button-success" disabled={!selectedReqs || !selectedReqs.length} onClick={() => exportCurl(selectedReqs)} tooltip="导出Curl命令" tooltipOptions={{position: 'bottom'}} />
+                <Button label="导出HttpRunner" className="p-button-info" disabled={!selectedReqs || !selectedReqs.length} onClick={() => exportHttpRunner(selectedReqs)} tooltip="导出HttpRunner yaml脚本" tooltipOptions={{position: 'bottom'}} />
+                <Button label="导出HttpBoot" className="p-button-warning" disabled={!selectedReqs || !selectedReqs.length} onClick={() => exportHttpBoot(selectedReqs)} tooltip="导出HttpBoot yaml脚本" tooltipOptions={{position: 'bottom'}} />
             </div>
         </div>
     );

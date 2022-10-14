@@ -64,7 +64,7 @@ class HttpSerializer {
             return ''
 
         let c = this.buildCurlQuery(data, '=', '; ')
-        return `-H 'cookie: ${c}'`
+        return `-H 'Cookie: ${c}'`
     }
 
     /**
@@ -72,7 +72,7 @@ class HttpSerializer {
      */
     isGzip(){
         // 匹配请求头 Accept-Encoding:gzip, deflate
-        let h = _.find(this.req.headers, h => h.name == 'Accept-Encoding'});
+        let h = _.find(this.req.headers, h => h.name == 'Accept-Encoding');
         return h && h.value.indexOf('gzip') > -1
     }
 
@@ -83,7 +83,6 @@ class HttpSerializer {
     toCurl()
     {
         let isPost = this.req.method.toLowerCase() == 'post';
-        let flag = isPost ? '' : '-G';
         let headers = this.buildCurlHeader(this.req.headers);
         let cookie = this.buildCurlCookie(this.req.cookies)
         // let query = this.buildCurlQuery(this.req.queryString);
@@ -91,8 +90,10 @@ class HttpSerializer {
         if(isPost){
             data = `-d '${this.req.postData.text}'`;
         }
-        let gzip = isGzip() ? '--compressed' : ''
-        return `curl ${flag} '${this.req.url}' ${headers} ${cookie} ${data} ${gzip}`;
+        let gzip = this.isGzip() ? '--compressed' : ''
+        let cmd = `curl '${this.req.url}' ${headers} ${cookie} ${data} ${gzip}`;
+        cmd = cmd.replace(/ (-{1,2}\w+)/g, " \\\n  \$1") // $n 是子表达式，只能从$1开始, $0是无效的 
+        return cmd;
     }
 
     /**
@@ -133,8 +134,7 @@ class HttpSerializer {
         ${data}
     validate_by_jsonpath:
         '$.code':
-            '=': 200
-`;
+            '=': 200`;
         yaml = yaml.replace(/\n\s+headers:\s+null/g, '').replace(/\n\s+data:\s+null/g, '')
         return yaml
     }
@@ -169,8 +169,7 @@ class HttpSerializer {
         data: 
             ${data}
     validate:
-        - eq: ['status_code',200]
-`;
+        - eq: ['status_code',200]`;
         yaml = yaml.replace(/\n\s+headers:\s+null/g, '').replace(/\n\s+params:\s+null/g, '').replace(/\n\s+data:\s+null/g, '')
         return yaml
     }

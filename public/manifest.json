@@ -36,6 +36,7 @@
         "storage", 
         "cookies",
         "activeTab",
+        "downloads",
         "http://*/*",
         "https://*/*"
     ]
