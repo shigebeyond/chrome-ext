@@ -11,6 +11,7 @@ import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 import { Tooltip } from 'primereact/tooltip';
 import { InputText } from 'primereact/inputtext';
 import { Divider } from 'primereact/divider';
+import _ from 'lodash';
 import HttpSerializer from '../lib/HttpSerializer';
 import { copyTxt } from '../fg/copy';
 import 'primereact/resources/themes/saga-blue/theme.css';
@@ -28,7 +29,10 @@ function HttpExporter() {
         type: 'document',
         headers: [],
         queryString: [],
-        cookies: []
+        cookies: [],
+        postData: {
+            params: []
+        }
     };
 
     const [reqs, setReqs] = useState([]);
@@ -69,7 +73,10 @@ function HttpExporter() {
                     type: 'document',
                     headers: [],
                     queryString: [],
-                    cookies: []
+                    cookies: [],
+                    postData: {
+                        params: []
+                    }
                 }
                 addReq(req)
             }, 2000)
@@ -165,32 +172,46 @@ function HttpExporter() {
         showToast('复制' + label + '成功')
     }
 
-    // 复制curl
+    /**
+     * 复制curl
+     */
     const copyCurl = (req) => {
         let s = new HttpSerializer(req)
         let r = s.toCurl()
         copy(r, 'Curl');
     }
 
-    // 复制HttpRunner
+    /**
+     * 复制HttpRunner
+     */
     const copyHttpRunner = (req) => {
         let s = new HttpSerializer(req)
-        let r = s.toCurl()
+        let r = s.toHttpRunnerYaml()
         copy(r, 'HttpRunner');
     }
 
-    // 复制HttpBoot
+    /**
+     * 复制HttpBoot
+     */
     const copyHttpBoot = (req) => {
         let s = new HttpSerializer(req)
-        let r = s.toCurl()
+        let r = s.toHttpBootYaml()
         copy(r, 'HttpBoot');
     }
 
+
+    /**
+     * 渲染请求的某个字段
+     */
     const renderField = (req, field) => {
         let r = ''
-        for(let v of req[field]){
+        // 获得字段值
+        // let vs = req[field] || []
+        // 获得多级字段值
+        let vs = _.result(req, field) || []
+        for(let v of vs){
             let de = v.value
-            if(field == 'queryString')
+            if(field == 'queryString' ||  field == 'postData.params')
                 de = decodeURIComponent(v.value)
             r += `<strong>${v.name}</strong>: ${de}<br/>`;
         }
@@ -204,11 +225,11 @@ function HttpExporter() {
 
     /**
      * url列渲染
-     * @param rowData
+     * @param row
      * @returns {JSX.Element}
      */
-    const renderUrl = (rowData) => {
-        let url = rowData.url
+    const renderUrl = (row) => {
+        let url = row.url
         // 获得uri
         let uri = getUri(url)
         if(uri == ''){ // 空则取域名
@@ -222,17 +243,17 @@ function HttpExporter() {
 
     /**
      * 操作按钮列渲染
-     * @param rowData
+     * @param row
      * @returns {JSX.Element}
      */
-    const renderActions = (rowData) => {
+    const renderActions = (row) => {
         return (
             <React.Fragment>
-                <Button label="打印" className="" onClick={() => console.log(rowData)} />
-                <Button label="详情" className="p-button-secondary" onClick={() => showReq(rowData)} />
-                <Button label="复制Curl" className="p-button-success" tooltip="复制Curl命令" onClick={() => copyCurl(rowData)} />
-                <Button label="复制HttpRunner" className="p-button-info" tooltip="复制HttpRunner yaml脚本" onClick={() => copyHttpRunner(rowData)} />
-                <Button label="复制HttpBoot" className="p-button-warning" tooltip="复制HttpBoot yaml脚本" onClick={() => copyHttpBoot(rowData)} />
+                <Button label="打印" className="" onClick={() => console.log(row)} />
+                <Button label="详情" className="p-button-secondary" onClick={() => showReq(row)} />
+                <Button label="复制Curl" className="p-button-success" tooltip="复制Curl命令" onClick={() => copyCurl(row)} />
+                <Button label="复制HttpRunner" className="p-button-info" tooltip="复制HttpRunner yaml脚本" onClick={() => copyHttpRunner(row)} />
+                <Button label="复制HttpBoot" className="p-button-warning" tooltip="复制HttpBoot yaml脚本" onClick={() => copyHttpBoot(row)} />
             </React.Fragment>
         );
     }
@@ -291,9 +312,12 @@ function HttpExporter() {
                 <Divider type="dashed" />
                 {renderField(req, 'headers')}
                 <Divider type="dashed" />
+                {renderField(req, 'cookies')}
+                <Divider type="dashed" />
                 {renderField(req, 'queryString')}
                 <Divider type="dashed" />
-                {renderField(req, 'cookies')}
+                {renderField(req, 'postData.params')}
+                
             </Dialog>
         </div>
     );
