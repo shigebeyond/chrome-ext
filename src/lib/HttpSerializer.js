@@ -87,7 +87,7 @@ class HttpSerializer {
         let cookie = this.buildCurlCookie(this.req.cookies)
         // let query = this.buildCurlQuery(this.req.queryString);
         let data = '';
-        if(isPost){
+        if(isPost && typeof(this.req.postData) != "undefined"){
             data = `-d '${this.req.postData.text}'`;
         }
         let gzip = this.isGzip() ? '--compressed' : ''
@@ -121,7 +121,8 @@ class HttpSerializer {
         let data = null;
         let headers = this.buildYamlProps(this.req.headers, 2);
         if(isPost){
-            data = this.buildYamlProps(this.req.postData.params, 2);
+            if(typeof(this.req.postData) != "undefined")
+                data = this.buildYamlProps(this.req.postData.params, 2);
         }else{
             url = url.split('?')[0] // 干掉query string
             data = this.buildYamlProps(this.req.queryString, 2);
@@ -152,7 +153,8 @@ class HttpSerializer {
         let data = null;
         let headers = this.buildYamlProps(this.req.headers, 3);
         if(isPost){
-            data = this.buildYamlProps(this.req.postData.params, 3);
+            if(typeof(this.req.postData) != "undefined")
+                data = this.buildYamlProps(this.req.postData.params, 3);
         }else{
             url = url.split('?')[0] // 干掉query string
             params = this.buildYamlProps(this.req.queryString, 3);

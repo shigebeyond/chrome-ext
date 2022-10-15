@@ -227,7 +227,7 @@ function HttpExporter() {
         let r = '';
         for(let req of reqs){
             let s = new HttpSerializer(req)
-            r += s.toCurl() + "\n"
+            r += s.toCurl() + " ;\n\n"
         }
         exportFile(r, 'curl.txt');
     }
@@ -257,7 +257,7 @@ function HttpExporter() {
     }
 
     const exportFile = (txt, file) => {
-        file = file.replace('.', '- '+ (new Date().getTime()) + '.') // 文件名添加时间戳
+        file = file.replace('.', '-'+ (new Date().getTime()) + '.') // 文件名添加时间戳
         console.log(txt)
         let blob = new Blob([txt], {type: 'text/plain'});
         FileSaver.saveAs(blob, file);
