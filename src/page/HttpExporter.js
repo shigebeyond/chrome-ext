@@ -11,6 +11,9 @@ import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 import { Tooltip } from 'primereact/tooltip';
 import { InputText } from 'primereact/inputtext';
 import { Divider } from 'primereact/divider';
+import { Dropdown } from 'primereact/dropdown';
+import { MultiSelect } from 'primereact/multiselect';
+import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import _ from 'lodash';
 import FileSaver from 'file-saver'
 import HttpSerializer from '../lib/HttpSerializer';
@@ -40,10 +43,17 @@ function HttpExporter() {
     const [req, setReq] = useState(emptyReq);
     const [reqDialog, setReqDialog] = useState(false);
     const [selectedReqs, setSelectedReqs] = useState(null);
-    const [globalFilter, setGlobalFilter] = useState(null);
     const toast = useRef(null);
     const dt = useRef(null);
     let id = 1
+
+    const [filters2, setFilters2] = useState({
+        'global': { value: null, matchMode: FilterMatchMode.CONTAINS },
+        'method': { value: null, matchMode: FilterMatchMode.EQUALS },
+        'url': { value: null, matchMode: FilterMatchMode.CONTAINS },
+        'type': { value: null, matchMode: FilterMatchMode.EQUALS },
+        'status': { value: null, matchMode: FilterMatchMode.EQUALS }
+    });
 
     useEffect(() => {
         if(typeof(chrome.devtools) != "undefined"){ // 正式
@@ -286,6 +296,14 @@ function HttpExporter() {
         )
     }
 
+    const onGlobalFilterChange2 = (e) => {
+        const value = e.target.value;
+        let _filters2 = { ...filters2 };
+        _filters2['global'].value = value;
+
+        setFilters2(_filters2);
+    }
+
     /**
      * url列渲染
      * @param row
@@ -303,6 +321,31 @@ function HttpExporter() {
         }
         return <a href={url} target="_blank" rel="noreferrer" className="w-7rem shadow-2 tip-target" data-pr-tooltip={url}>{uri}</a>
     }
+
+    const methods = [
+        'get', 'post'
+    ];
+
+    const renderMethodFilter = (options) => {
+        return <Dropdown value={options.value} options={methods} onChange={(e) => options.filterApplyCallback(e.value)} placeholder="搜索" className="p-column-filter" showClear />;
+    }
+
+    const renderTypeFilter = (options) => {
+        // 根据请求来动态获得选项 -- 失败
+        /*let types = new Set()
+        for(let req of reqs){
+            types.add(req.type)
+        }
+        */
+        let types = ['script', 'document', 'image', 'stylesheet', 'xhr', 'other']
+        let items = []
+        for(let type of types){
+            let item = {label: type, value: type}
+            items.push()
+        }
+        return <MultiSelect value={options.value} options={types} onChange={(e) => options.filterCallback(e.value)} placeholder="搜索" className="p-column-filter" />;
+    }
+
 
     /**
      * 操作按钮列渲染
@@ -327,7 +370,7 @@ function HttpExporter() {
         <div className="flex flex-column md:flex-row md:align-items-center justify-content-between">
             <span className="p-input-icon-left w-full md:w-auto">
                 <i className="pi pi-search" />
-                <InputText type="search" onInput={(e) => setGlobalFilter(e.target.value)} placeholder="Search..." className="w-full lg:w-auto" />
+                <InputText type="search" onInput={onGlobalFilterChange2} placeholder="Search..." className="w-full lg:w-auto" />
             </span>
             <div className="mt-3 md:mt-0 flex justify-content-end">
                 <Button icon="pi pi-trash" className="p-button-danger" onClick={deleteSelectedReqs} disabled={!selectedReqs || !selectedReqs.length} tooltip="删除" tooltipOptions={{position: 'bottom'}} />
@@ -358,13 +401,13 @@ function HttpExporter() {
                        dataKey="id" paginator rows={30} rowsPerPageOptions={[10, 20, 30, 50, 70, 100]}
                        paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                        currentPageReportTemplate="Showing {first} to {last} of {totalRecords} pages"
-                       globalFilter={globalFilter} globalFilterFields={['url']}header={header} responsiveLayout="scroll">
-                <Column selectionMode="multiple" headerStyle={{ width: '3rem' }} exportable={false}></Column>
-                <Column field="method" header="method" style={{ width: '4rem' }}></Column>
-                <Column field="url" header="url" body={renderUrl}></Column>
-                <Column field="type" header="type" style={{ width: '4rem' }}></Column>
-                <Column field="status" header="status" style={{ width: '4rem' }}></Column>
-                <Column body={renderActions} exportable={false} style={{ minWidth: '8rem' }}></Column>
+                       filters={filters2} filterDisplay="row" globalFilterFields={['url']} header={header} responsiveLayout="scroll">
+                <Column selectionMode="multiple" headerStyle={{width:'3rem'}} exportable={false}></Column>
+                <Column field="method" header="method" style={{width:'4rem'}} filterMenuStyle={{width:'4rem'}} filter filterElement={renderMethodFilter} showFilterMenu={false} ></Column>
+                <Column field="url" header="url" body={renderUrl} filterMenuStyle={{width:'8rem'}} filter filterPlaceholder="Search by url" showFilterMenu={false} ></Column>
+                <Column field="type" header="type" style={{width:'4rem'}} filterMenuStyle={{width:'4rem'}} filter filterElement={renderTypeFilter} showFilterMenu={false}></Column>
+                <Column field="status" header="status" style={{width:'4rem'}} filterMenuStyle={{width:'4rem'}} filter filterPlaceholder="Search by status" showFilterMenu={false}></Column>
+                <Column body={renderActions} exportable={false} style={{minWidth:'8rem'}}></Column>
             </DataTable>
 
             <Dialog visible={reqDialog} breakpoints={{'960px': '75vw', '640px': '100vw'}} style={{width: '50vw', 'font-size': '13px'}} header="Http请求详情" modal className="p-fluid" footer={reqDialogFooter} onHide={hideDialog}>
