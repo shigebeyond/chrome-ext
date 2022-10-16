@@ -51,8 +51,8 @@ function HttpExporter() {
         'global': { value: null, matchMode: FilterMatchMode.CONTAINS },
         'method': { value: null, matchMode: FilterMatchMode.EQUALS },
         'url': { value: null, matchMode: FilterMatchMode.CONTAINS },
-        'type': { value: null, matchMode: FilterMatchMode.EQUALS },
-        'status': { value: null, matchMode: FilterMatchMode.EQUALS }
+        'type': { value: null, matchMode: FilterMatchMode.IN }, // 与 MultiSelect 多值配合使用
+        'status': { value: null, matchMode: FilterMatchMode.CONTAINS }
     });
 
     useEffect(() => {
@@ -330,6 +330,8 @@ function HttpExporter() {
         return <Dropdown value={options.value} options={methods} onChange={(e) => options.filterApplyCallback(e.value)} placeholder="搜索" className="p-column-filter" showClear />;
     }
 
+    const types = ['script', 'document', 'image', 'stylesheet', 'xhr', 'other']
+
     const renderTypeFilter = (options) => {
         // 根据请求来动态获得选项 -- 失败
         /*let types = new Set()
@@ -337,13 +339,8 @@ function HttpExporter() {
             types.add(req.type)
         }
         */
-        let types = ['script', 'document', 'image', 'stylesheet', 'xhr', 'other']
-        let items = []
-        for(let type of types){
-            let item = {label: type, value: type}
-            items.push()
-        }
-        return <MultiSelect value={options.value} options={types} onChange={(e) => options.filterCallback(e.value)} placeholder="搜索" className="p-column-filter" />;
+        console.log(options)
+        return <MultiSelect value={options.value} options={types} onChange={(e) => {debugger;options.filterCallback(e.value); console.log(e.value);} } placeholder="搜索" className="p-column-filter" maxSelectedLabels={1} />;
     }
 
 
@@ -389,6 +386,19 @@ function HttpExporter() {
         </React.Fragment>
     );
 
+    const filterProps = (fw, w = null) => {
+        let props = {
+             filterMenuStyle:{width: fw+'rem'},
+             filterPlaceholder:"搜索",
+             showFilterMenu:false,
+             filter: true,
+        }
+        if(w != null)
+            props['style'] = {width: w+'rem'} 
+        return props
+    }
+
+
     // 表格
     return (
         <div className="datatable-crud-demo surface-card p-4 border-round shadow-2">
@@ -403,10 +413,10 @@ function HttpExporter() {
                        currentPageReportTemplate="Showing {first} to {last} of {totalRecords} pages"
                        filters={filters2} filterDisplay="row" globalFilterFields={['url']} header={header} responsiveLayout="scroll">
                 <Column selectionMode="multiple" headerStyle={{width:'3rem'}} exportable={false}></Column>
-                <Column field="method" header="method" style={{width:'4rem'}} filterMenuStyle={{width:'4rem'}} filter filterElement={renderMethodFilter} showFilterMenu={false} ></Column>
-                <Column field="url" header="url" body={renderUrl} filterMenuStyle={{width:'8rem'}} filter filterPlaceholder="Search by url" showFilterMenu={false} ></Column>
-                <Column field="type" header="type" style={{width:'4rem'}} filterMenuStyle={{width:'4rem'}} filter filterElement={renderTypeFilter} showFilterMenu={false}></Column>
-                <Column field="status" header="status" style={{width:'4rem'}} filterMenuStyle={{width:'4rem'}} filter filterPlaceholder="Search by status" showFilterMenu={false}></Column>
+                <Column field="method" header="method" {...filterProps(4, 4)} filterElement={renderMethodFilter}></Column>
+                <Column field="url" header="url" body={renderUrl} {...filterProps(8)}></Column>
+                <Column field="type" header="type" filterField="type" {...filterProps(4, 4)} filterElement={renderTypeFilter}></Column>
+                <Column field="status" header="status" {...filterProps(8, 8)}></Column>
                 <Column body={renderActions} exportable={false} style={{minWidth:'8rem'}}></Column>
             </DataTable>
 
@@ -415,6 +425,7 @@ function HttpExporter() {
                     <h3>常规</h3>
                     <strong>method</strong>: {req.method}<br/>
                     <strong>url</strong>: {req.url}<br/>
+                    <strong>type</strong>: {req.type}<br/>
                     <strong>status</strong>: {req.status}
                 </div>
                 <Divider type="dashed" />
