@@ -47,11 +47,12 @@ function HttpExporter() {
     const dt = useRef(null);
     let id = 1
 
-    const [filters2, setFilters2] = useState({
+    const [filters, setFilters] = useState({
         'global': { value: null, matchMode: FilterMatchMode.CONTAINS },
         'method': { value: null, matchMode: FilterMatchMode.EQUALS },
         'url': { value: null, matchMode: FilterMatchMode.CONTAINS },
-        'type': { value: null, matchMode: FilterMatchMode.IN }, // 与 MultiSelect 多值配合使用
+        //'type': { value: null, matchMode: FilterMatchMode.IN }, // 与 MultiSelect 多值配合使用
+        'type': { value: null, matchMode: FilterMatchMode.EQUALS },
         'status': { value: null, matchMode: FilterMatchMode.CONTAINS }
     });
 
@@ -78,9 +79,10 @@ function HttpExporter() {
             showToast('测试模式: 每隔2s添加一行')
             const timer = setInterval(() => {
                 let id = createId()
+                let method = id % 2 == 0 ? 'get' : 'post'
                 let req = {
                     id,
-                    method: 'get',
+                    method,
                     url: 'https://www.baidu.com/s?ie=UTF-8&wd=' + id,
                     status: 200,
                     type: 'document',
@@ -98,6 +100,14 @@ function HttpExporter() {
             }
         }
     }, []);
+
+    const onGlobalFilterChange = (e) => {
+        const value = e.target.value;
+        let _filters = { ...filters };
+        _filters['global'].value = value;
+
+        setFilters(_filters);
+    }
 
     //　新加请求
     const addReq = (request) => {
@@ -296,14 +306,6 @@ function HttpExporter() {
         )
     }
 
-    const onGlobalFilterChange2 = (e) => {
-        const value = e.target.value;
-        let _filters2 = { ...filters2 };
-        _filters2['global'].value = value;
-
-        setFilters2(_filters2);
-    }
-
     /**
      * url列渲染
      * @param row
@@ -322,9 +324,7 @@ function HttpExporter() {
         return <a href={url} target="_blank" rel="noreferrer" className="w-7rem shadow-2 tip-target" data-pr-tooltip={url}>{uri}</a>
     }
 
-    const methods = [
-        'get', 'post'
-    ];
+    const methods = ['get', 'post'];
 
     const renderMethodFilter = (options) => {
         return <Dropdown value={options.value} options={methods} onChange={(e) => options.filterApplyCallback(e.value)} placeholder="搜索" className="p-column-filter" showClear />;
@@ -333,16 +333,9 @@ function HttpExporter() {
     const types = ['script', 'document', 'image', 'stylesheet', 'xhr', 'other']
 
     const renderTypeFilter = (options) => {
-        // 根据请求来动态获得选项 -- 失败
-        /*let types = new Set()
-        for(let req of reqs){
-            types.add(req.type)
-        }
-        */
-        console.log(options)
-        return <MultiSelect value={options.value} options={types} onChange={(e) => {debugger;options.filterCallback(e.value); console.log(e.value);} } placeholder="搜索" className="p-column-filter" maxSelectedLabels={1} />;
+        //return <MultiSelect value={options.value} options={types} onChange={(e) => {debugger;options.filterCallback(e.value); console.log(e.value);} } placeholder="搜索" className="p-column-filter" maxSelectedLabels={1} />;
+        return <Dropdown value={options.value} options={types} onChange={(e) => options.filterApplyCallback(e.value)} placeholder="搜索" className="p-column-filter" showClear />;
     }
-
 
     /**
      * 操作按钮列渲染
@@ -367,7 +360,7 @@ function HttpExporter() {
         <div className="flex flex-column md:flex-row md:align-items-center justify-content-between">
             <span className="p-input-icon-left w-full md:w-auto">
                 <i className="pi pi-search" />
-                <InputText type="search" onInput={onGlobalFilterChange2} placeholder="Search..." className="w-full lg:w-auto" />
+                <InputText type="search" onInput={onGlobalFilterChange} placeholder="Search..." className="w-full lg:w-auto" />
             </span>
             <div className="mt-3 md:mt-0 flex justify-content-end">
                 <Button icon="pi pi-trash" className="p-button-danger" onClick={deleteSelectedReqs} disabled={!selectedReqs || !selectedReqs.length} tooltip="删除" tooltipOptions={{position: 'bottom'}} />
@@ -411,11 +404,11 @@ function HttpExporter() {
                        dataKey="id" paginator rows={30} rowsPerPageOptions={[10, 20, 30, 50, 70, 100]}
                        paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                        currentPageReportTemplate="Showing {first} to {last} of {totalRecords} pages"
-                       filters={filters2} filterDisplay="row" globalFilterFields={['url']} header={header} responsiveLayout="scroll">
+                       filters={filters} filterDisplay="row" globalFilterFields={['url']} header={header} responsiveLayout="scroll">
                 <Column selectionMode="multiple" headerStyle={{width:'3rem'}} exportable={false}></Column>
                 <Column field="method" header="method" {...filterProps(4, 4)} filterElement={renderMethodFilter}></Column>
                 <Column field="url" header="url" body={renderUrl} {...filterProps(8)}></Column>
-                <Column field="type" header="type" filterField="type" {...filterProps(4, 4)} filterElement={renderTypeFilter}></Column>
+                <Column field="type" header="type" {...filterProps(4, 4)} filterElement={renderTypeFilter}></Column>
                 <Column field="status" header="status" {...filterProps(8, 8)}></Column>
                 <Column body={renderActions} exportable={false} style={{minWidth:'8rem'}}></Column>
             </DataTable>
