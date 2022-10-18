@@ -54,8 +54,7 @@ function HttpExporter() {
         'global': { value: null, matchMode: FilterMatchMode.CONTAINS },
         'method': { value: null, matchMode: FilterMatchMode.EQUALS },
         'url': { value: null, matchMode: FilterMatchMode.CONTAINS },
-        //'type': { value: null, matchMode: FilterMatchMode.IN }, // 与 MultiSelect 多值配合使用
-        'type': { value: null, matchMode: FilterMatchMode.EQUALS },
+        'type': { value: null, matchMode: FilterMatchMode.IN }, // 与 MultiSelect 多值配合使用
         'status': { value: null, matchMode: FilterMatchMode.CONTAINS }
     });
 
@@ -104,15 +103,21 @@ function HttpExporter() {
         }
     }, []);
 
-    const onGlobalFilterChange = (e) => {
-        setGlobalFilter(e.target.value)
-    }
-
-    const setGlobalFilter = (value) => {
+    /**
+     * 设置单个字段的过滤值
+     */
+    const setFieldFilter = (field, value) => {
         let _filters = { ...filters };
-        _filters['global'].value = value;
+        _filters[field].value = value;
 
         setFilters(_filters);
+    }
+
+    /**
+     * 设置全局的搜索
+     */
+    const setGlobalFilter = (value) => {
+        setFieldFilter('global', value)
         setWd(value)
     }
 
@@ -314,9 +319,10 @@ function HttpExporter() {
         exportFile(r, 'HttpBoot.yml');
     }
 
+    // 导出(保存)文件
     const exportFile = (txt, file) => {
         file = file.replace('.', '-'+ (new Date().getTime()) + '.') // 文件名添加时间戳
-        console.log(txt)
+        //console.log(txt)
         let blob = new Blob([txt], {type: 'text/plain'});
         FileSaver.saveAs(blob, file);
     } 
@@ -371,8 +377,16 @@ function HttpExporter() {
     const types = ['script', 'document', 'image', 'stylesheet', 'xhr', 'other']
 
     const renderTypeFilter = (options) => {
-        //return <MultiSelect value={options.value} options={types} onChange={(e) => {debugger;options.filterCallback(e.value); console.log(e.value);} } placeholder="搜索" className="p-column-filter" maxSelectedLabels={1} />;
-        return <Dropdown value={options.value} options={types} onChange={(e) => options.filterApplyCallback(e.value)} placeholder="搜索" className="p-column-filter" showClear />;
+        return <MultiSelect value={options.value} options={types} onChange={(e) => setTypeFilter(e.value) } placeholder="搜索" className="p-column-filter" maxSelectedLabels={1} />;
+        // return <Dropdown value={options.value} options={types} onChange={(e) => options.filterApplyCallback(e.value)} placeholder="搜索" className="p-column-filter" showClear />;
+    }
+
+    const setTypeFilter = (value) => {
+        // wrong：过滤不了
+        // value 是勾选的多个值
+        //options.filterCallback(value);
+        
+        setFieldFilter('type', e.value)
     }
 
     /**
@@ -398,7 +412,7 @@ function HttpExporter() {
         <div className="flex flex-column md:flex-row md:align-items-center justify-content-between">
             <span className="p-input-icon-left w-full md:w-auto">
                 <i className="pi pi-search" />
-                <InputText value={wd} type="search" onInput={onGlobalFilterChange} placeholder="Search..." className="w-full lg:w-auto" />
+                <InputText value={wd} type="search" onInput={(e) => setGlobalFilter(e.target.value)} placeholder="Search..." className="w-full lg:w-auto" />
                  {" "}
                 <label htmlFor="cb" className="p-checkbox-label">仅本站点</label>
                 <Checkbox inputId="cb" onChange={onOnlyCurrSiteChange} checked={onlyCurrSite}></Checkbox>
