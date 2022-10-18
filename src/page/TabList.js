@@ -193,15 +193,23 @@ function TabList() {
         setTab(_tab);
     }
 
+    // 域名的正则
+    const domainReg = /https?:\/\/([^/]+)/i;
+
     /**
      * 获得域名
      * @param url
-     * @returns {*}
+     * @returns string
      */
-    const getDomain = (url) => {
-        let reg = /https?:\/\/([^/]+)\//i;
-        let domain = url.match(reg);
-        return domain && domain[2];
+    const getDomain = (url, withProtocol = false) => {
+        let domain = url.match(domainReg);
+        if(domain){
+            if(withProtocol) // 带协议
+                return domain[0]
+
+            return domain[1]
+        }
+        return null
     }
 
     /**

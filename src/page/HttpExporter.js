@@ -10,6 +10,7 @@ import { Dialog } from 'primereact/dialog';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 import { Tooltip } from 'primereact/tooltip';
 import { InputText } from 'primereact/inputtext';
+import { Checkbox } from 'primereact/checkbox';
 import { Divider } from 'primereact/divider';
 import { Dropdown } from 'primereact/dropdown';
 import { MultiSelect } from 'primereact/multiselect';
@@ -43,6 +44,8 @@ function HttpExporter() {
     const [req, setReq] = useState(emptyReq);
     const [reqDialog, setReqDialog] = useState(false);
     const [selectedReqs, setSelectedReqs] = useState(null);
+    const [onlyCurrSite, setOnlyCurrSite] = useState(null);
+    const [wd, setWd] = useState('');// 搜索词
     const toast = useRef(null);
     const dt = useRef(null);
     let id = 1
@@ -102,11 +105,40 @@ function HttpExporter() {
     }, []);
 
     const onGlobalFilterChange = (e) => {
-        const value = e.target.value;
+        setGlobalFilter(e.target.value)
+    }
+
+    const setGlobalFilter = (value) => {
         let _filters = { ...filters };
         _filters['global'].value = value;
 
         setFilters(_filters);
+        setWd(value)
+    }
+
+    /**
+     * 过滤本站点
+     */
+    const onOnlyCurrSiteChange = (e) => {
+        let f = e.checked
+        if(!f){ // 1 不过滤
+            setGlobalFilter('')
+            setOnlyCurrSite(f)
+            return
+        }
+
+        // 2 过滤
+        // 获得当前url
+        let url = window.location.href // wrong: 是扩展地址 chrome-extension://bhafkkdcfmkknpagomfaidakoplodpae/index.html#/httpExporter
+        chrome.devtools.inspectedWindow.eval(
+            "window.location.href",
+             (url, isException) => {
+                let domain = getDomain(url, true)
+                //console.log(domain)
+                setGlobalFilter(domain)
+                setOnlyCurrSite(f)
+             }
+        )
     }
 
     //　新加请求
@@ -157,16 +189,22 @@ function HttpExporter() {
     }
 
     // 域名的正则
-    const domainReg = /https?:\/\/([^/]+)\//i;
+    const domainReg = /https?:\/\/([^/]+)/i;
 
     /**
      * 获得域名
      * @param url
      * @returns string
      */
-    const getDomain = (url) => {
+    const getDomain = (url, withProtocol = false) => {
         let domain = url.match(domainReg);
-        return domain && domain[2];
+        if(domain){
+            if(withProtocol) // 带协议
+                return domain[0]
+
+            return domain[1]
+        }
+        return null
     }
 
     /**
@@ -360,7 +398,10 @@ function HttpExporter() {
         <div className="flex flex-column md:flex-row md:align-items-center justify-content-between">
             <span className="p-input-icon-left w-full md:w-auto">
                 <i className="pi pi-search" />
-                <InputText type="search" onInput={onGlobalFilterChange} placeholder="Search..." className="w-full lg:w-auto" />
+                <InputText value={wd} type="search" onInput={onGlobalFilterChange} placeholder="Search..." className="w-full lg:w-auto" />
+                 {" "}
+                <label htmlFor="cb" className="p-checkbox-label">仅本站点</label>
+                <Checkbox inputId="cb" onChange={onOnlyCurrSiteChange} checked={onlyCurrSite}></Checkbox>
             </span>
             <div className="mt-3 md:mt-0 flex justify-content-end">
                 <Button icon="pi pi-trash" className="p-button-danger" onClick={deleteSelectedReqs} disabled={!selectedReqs || !selectedReqs.length} tooltip="删除" tooltipOptions={{position: 'bottom'}} />
