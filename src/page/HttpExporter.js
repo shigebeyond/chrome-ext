@@ -381,12 +381,14 @@ function HttpExporter() {
         // return <Dropdown value={options.value} options={types} onChange={(e) => options.filterApplyCallback(e.value)} placeholder="搜索" className="p-column-filter" showClear />;
     }
 
+    /**
+     * 设置type过滤器
+     */
     const setTypeFilter = (value) => {
         // wrong：过滤不了
         // value 是勾选的多个值
         //options.filterCallback(value);
-        
-        setFieldFilter('type', e.value)
+        setFieldFilter('type', value)
     }
 
     /**
