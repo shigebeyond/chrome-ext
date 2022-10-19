@@ -9,11 +9,17 @@ import store from './store';
 var socket = null;
 function connectMqServer(url) {
   console.log('连接消息服务器')
-  socket = io(url);
+  var failNum = 0
+  socket = io(url, {
+    autoConnect: false // 延迟连接
+  });
   // socket.id属性标识socket
   // console.log(socket)
   socket.on('reconnecting', function (attemptNumber) {
     console.log('尝试建立ws连接')
+  });
+  socket.on("error", (error) => {
+    console.log('连接错误: ' + error)
   });
   socket.on('connect', function () {
     console.log('ws连接成功')
@@ -34,6 +40,8 @@ function connectMqServer(url) {
   socket.on('ack', function (ack) {
     console.log(ack.request + '响应:' + ack.respone + ':' + ack.reply);        
   });
+  // 延迟连接
+  socket.connect();
   return socket;
 }
 
