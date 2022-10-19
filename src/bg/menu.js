@@ -101,6 +101,10 @@ if(autoConnectMqServer){
 function initMq(){
     // 连接mq server
     let mqServerUrl = store.readOption('mqServerUrl');
+    if(mqServerUrl == ''){
+        modalBg.toast('未配置选项: mqServerUrl', 1)
+        return
+    }
     wmq.connectMqServer(mqServerUrl)
     // 监听mq：远程打开
     wmq.subWebMq('remote_open', function(mq, own){

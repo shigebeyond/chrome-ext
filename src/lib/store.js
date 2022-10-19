@@ -47,12 +47,15 @@ function readOrWriteStore(key, defaultValue = null){
 
 // 从 localStorage 读配置
 function readOption(key) {
-  let opt = readOrWriteStore("options", {
+  let opts = readOrWriteStore("options", {
     notePostUrl: '',
     mqServerUrl: '',
     autoConnectMqServer: false
   })
-  return opt[key]
+  let opt = opts[key]
+  if(opt.mqServerUrl == '')
+    opt.autoConnectMqServer = false
+  return opt
 }
 
 export default {
