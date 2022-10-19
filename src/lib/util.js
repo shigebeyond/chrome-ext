@@ -47,22 +47,27 @@ export function isHttpUrl(url){
  * @param href
  * @returns string
  */
-/*export function parseDomain(href, withProtocol = false){
-    let domain = href.match(httpDomainReg);
-    if(domain){
+export function parseDomain(href, withProtocol = false){
+    let mat = href.match(httpDomainReg);
+    if(mat){
         if(withProtocol) // 带协议
-            return domain[0]
+            return mat[0]
 
-        return domain[1]
+        return mat[1]
     }
     return null
-}*/
-export function parseDomain(href = null, withProtocol = false){
-   let url = parseUrl(href) 
-   if(withProtocol) // 带协议
-        return `${url.protocol}://${url.hostname}`
+}
 
-    return url.hostname
+/**
+ * 分割域名+路径
+ * @param href
+ * @returns array
+ */
+export function splitDomainAndPath(href){
+    let mat = href.match(httpDomainReg);
+    let domain = mat[0] // 带协议
+    let path = href.substr(domain.length)
+    return [domain, path]
 }
 
 /**

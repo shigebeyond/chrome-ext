@@ -18,7 +18,7 @@ import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import _ from 'lodash';
 import FileSaver from 'file-saver'
 import HttpSerializer from '../lib/HttpSerializer';
-import { httpDomainReg, parseDomain, genUuid } from '../lib/util';
+import { splitDomainAndPath, parseDomain, genUuid } from '../lib/util';
 import { copyTxt } from '../fg/copy';
 import 'primereact/resources/themes/saga-blue/theme.css';
 import 'primereact/resources/primereact.min.css';
@@ -327,9 +327,9 @@ function HttpExporter() {
     const renderUrl = (row) => {
         let url = row.url
         // 获得uri
-        let uri = url.replace(httpDomainReg, '')
+        let [domain, uri] = splitDomainAndPath(url)
         if(uri == ''){ // 空则取域名
-            uri = parseDomain(url)
+            uri = domain
         }else{ //截取指定长度, 并加上省略号
             let len = 50
             uri = uri.length > len ? uri.slice(0, len) + "..." : uri;

@@ -1,29 +1,30 @@
-import { io } from "socket.io-client";
+import { io, Manager } from "socket.io-client";
 import {publishLocalMq, subLocalMq} from './local-mq';
 import modalBg from './modal-bg';
 import store from './store';
+import { splitDomainAndPath } from './util';
 
 // ---- 连接mq server ----
 // mq server是基于websocket+redis+nodejs实现web端消息推送： https://gitee.com/shigebeyond/webredis
 // 使用websocket连接mq server：参见sock.io API文档事件(Event)说明 https://socket.io/docs/client-api
 var socket = null;
 function connectMqServer(url) {
-  console.log('连接消息服务器')
-  var failNum = 0
-  socket = io(url, {
-    autoConnect: false // 延迟连接
+  console.log('开始连接消息服务器')
+
+  let [domain, path] = splitDomainAndPath(url)
+  const manager = new Manager(domain, {
+    autoConnect: false
   });
+  socket = manager.socket(path);
   // socket.id属性标识socket
   // console.log(socket)
   socket.on('reconnecting', function (attemptNumber) {
-    console.log('尝试建立ws连接')
-  });
-  socket.on("error", (error) => {
-    console.log('连接错误: ' + error)
+    console.log('尝试重建ws连接')
   });
   socket.on('connect', function () {
-    console.log('ws连接成功')
-    modalBg.toast('ws连接成功')
+    let msg = 'ws连接成功'
+    console.log(msg)
+    modalBg.toast(msg)
   });
   socket.on('disconnect', function (reason) {
     console.log('断开ws连接:' + reason)
@@ -40,8 +41,25 @@ function connectMqServer(url) {
   socket.on('ack', function (ack) {
     console.log(ack.request + '响应:' + ack.respone + ':' + ack.reply);        
   });
-  // 延迟连接
-  socket.connect();
+  // 连接, 有(失败)回调
+  var failNum = 0
+  manager.open((err) => { 
+    if (err) {
+      // an error has occurred
+      if(++failNum >= 5){
+        let msg = '连接失败次数达到5次，直接关闭连接'
+        console.log(msg);
+        modalBg.toast(msg)
+        socket.close()
+      }else{ // 重连
+        console.log(`第${failNum}次失败重连`);
+        manager.maybeReconnectOnOpen()
+      }
+    } else {
+      // the connection was successfully established
+      console.log('ws连接成功')  
+    }
+  });
   return socket;
 }
 
@@ -90,8 +108,9 @@ function handleWebMq(message) {
   console.log('收到web消息:' + JSON.stringify(message));
   let c = message.channel;
   if(!c in webMqCallbacks){
-    console.log('未订阅channel:' + c);
-    modalBg.toast('未订阅channel:' + c)
+    let msg = '未订阅channel:' + c
+    console.log(msg);
+    modalBg.toast(msg)
     return;
   }
 
