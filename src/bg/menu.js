@@ -4,7 +4,8 @@ import modalBg from '../lib/modal-bg';
 import store from '../lib/store';
 import tabx from '../lib/tabx';
 import wmq from '../lib/web-mq';
-import {youdaoDict, youdaoTranslate} from '../lib/youdao';
+import { genUuid, getFormatDateTime, isHttpUrl } from '../lib/util'
+import { youdaoDict, youdaoTranslate } from '../lib/youdao';
 
 // 2 网页剪报
 chrome.contextMenus.create({
@@ -131,7 +132,7 @@ chrome.contextMenus.create({
     contexts: ['page'], // page表示页面右键就会有这个菜单，如果想要当选中文字时才会出现此右键菜单，用：selection
     onclick: function (params) {
         chrome.tabs.getSelected(null, function (tab) {
-            if(!tabx.isHttpUrl(tab.url)){
+            if(!isHttpUrl(tab.url)){
                 alert('忽略非http协议的标签页')
                 return
             }

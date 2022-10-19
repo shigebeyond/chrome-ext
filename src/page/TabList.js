@@ -10,6 +10,7 @@ import { InputTextarea } from 'primereact/inputtextarea';
 import { Dialog } from 'primereact/dialog';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 import { InputText } from 'primereact/inputtext';
+import { parseDomain } from '../lib/util';
 import 'primereact/resources/themes/saga-blue/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
@@ -193,32 +194,13 @@ function TabList() {
         setTab(_tab);
     }
 
-    // 域名的正则
-    const domainReg = /https?:\/\/([^/]+)/i;
-
-    /**
-     * 获得域名
-     * @param url
-     * @returns string
-     */
-    const getDomain = (url, withProtocol = false) => {
-        let domain = url.match(domainReg);
-        if(domain){
-            if(withProtocol) // 带协议
-                return domain[0]
-
-            return domain[1]
-        }
-        return null
-    }
-
     /**
      * url列渲染
      * @param row
      * @returns {JSX.Element}
      */
     const renderUrl = (row) => {
-        let domain = getDomain(row.url)
+        let domain = parseDomain(row.url)
         return <a href={row.url} target="_blank" rel="noreferrer" className="w-7rem shadow-2">{domain}</a>
     }
 

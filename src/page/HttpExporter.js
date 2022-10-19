@@ -18,6 +18,7 @@ import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import _ from 'lodash';
 import FileSaver from 'file-saver'
 import HttpSerializer from '../lib/HttpSerializer';
+import { httpDomainReg, parseDomain, genUuid } from '../lib/util';
 import { copyTxt } from '../fg/copy';
 import 'primereact/resources/themes/saga-blue/theme.css';
 import 'primereact/resources/primereact.min.css';
@@ -44,11 +45,11 @@ function HttpExporter() {
     const [req, setReq] = useState(emptyReq);
     const [reqDialog, setReqDialog] = useState(false);
     const [selectedReqs, setSelectedReqs] = useState(null);
-    const [onlyCurrSite, setOnlyCurrSite] = useState(null);
     const [wd, setWd] = useState('');// 搜索词
+    const [onlyCurrSite, setOnlyCurrSite] = useState(null);
+    const [noHeaders, setNoHeaders] = useState(null);
     const toast = useRef(null);
     const dt = useRef(null);
-    let id = 1
 
     const [filters, setFilters] = useState({
         'global': { value: null, matchMode: FilterMatchMode.CONTAINS },
@@ -70,7 +71,7 @@ function HttpExporter() {
                 // 拼接请求对象
                 let {request, response, _resourceType} = data;
                 request.status = response.status
-                request.id = createId()
+                request.id = genUuid()
                 request.type = _resourceType
                 //console.log(request.url)
 
@@ -80,7 +81,7 @@ function HttpExporter() {
         }else{ // 测试
             showToast('测试模式: 每隔2s添加一行')
             const timer = setInterval(() => {
-                let id = createId()
+                let id = genUuid()
                 let method = id % 2 == 0 ? 'get' : 'post'
                 let req = {
                     id,
@@ -88,9 +89,16 @@ function HttpExporter() {
                     url: 'https://www.baidu.com/s?ie=UTF-8&wd=' + id,
                     status: 200,
                     type: 'document',
-                    headers: [],
+                    headers: [
+                        {name: 'sec-ch-ua', value: '"Chromium";v="104", " Not A;Brand";v="99", "Google Chrome";v="104"'},
+                        {name: 'sec-ch-ua-mobile', value: '?0'},
+                        {name: 'sec-ch-ua-platform', value: '"Linux"'}
+                    ],
                     queryString: [],
-                    cookies: [],
+                    cookies: [
+                        {name: '_ga', value: 'GA1.2.520720828.1664344154'},
+                        {name: '_gid', value: 'GA1.2.1717542097.1666061409'}
+                    ],
                     postData: {
                         params: []
                     }
@@ -138,7 +146,7 @@ function HttpExporter() {
         chrome.devtools.inspectedWindow.eval(
             "window.location.href",
              (url, isException) => {
-                let domain = getDomain(url, true)
+                let domain = parseDomain(url, true)
                 //console.log(domain)
                 setGlobalFilter(domain)
                 setOnlyCurrSite(f)
@@ -155,17 +163,6 @@ function HttpExporter() {
             return _reqs
         })
     }
-
-    const createId = () => {
-        /*let id = '';
-        let chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-        for (let i = 0; i < 5; i++) {
-            id += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
-        return id;*/
-        return id++;
-    }
-
 
     const showToast = (msg) => {
         toast.current.show({severity: 'success', summary: 'Successful', detail: msg, life: 3000});
@@ -191,34 +188,6 @@ function HttpExporter() {
         }, function (win) {
             console.log('新建视窗: ' + JSON.stringify(win))
         })
-    }
-
-    // 域名的正则
-    const domainReg = /https?:\/\/([^/]+)/i;
-
-    /**
-     * 获得域名
-     * @param url
-     * @returns string
-     */
-    const getDomain = (url, withProtocol = false) => {
-        let domain = url.match(domainReg);
-        if(domain){
-            if(withProtocol) // 带协议
-                return domain[0]
-
-            return domain[1]
-        }
-        return null
-    }
-
-    /**
-     * 获得uri(去掉域名部分)
-     * @param url
-     * @returns string
-     */
-    const getUri = (url) => {
-        return url.replace(domainReg, '');
     }
 
     /**
@@ -260,7 +229,7 @@ function HttpExporter() {
      * 复制curl
      */
     const copyCurl = (req) => {
-        let s = new HttpSerializer(req)
+        let s = new HttpSerializer(req, noHeaders)
         let r = s.toCurl()
         copy(r, 'Curl');
     }
@@ -269,7 +238,7 @@ function HttpExporter() {
      * 复制HttpRunner
      */
     const copyHttpRunner = (req) => {
-        let s = new HttpSerializer(req)
+        let s = new HttpSerializer(req, noHeaders)
         let r = s.toHttpRunnerYaml()
         copy(r, 'HttpRunner');
     }
@@ -278,7 +247,7 @@ function HttpExporter() {
      * 复制HttpBoot
      */
     const copyHttpBoot = (req) => {
-        let s = new HttpSerializer(req)
+        let s = new HttpSerializer(req, noHeaders)
         let r = s.toHttpBootYaml()
         copy(r, 'HttpBoot');
     }
@@ -289,7 +258,7 @@ function HttpExporter() {
     const exportCurl = (reqs) => {
         let r = '';
         for(let req of reqs){
-            let s = new HttpSerializer(req)
+            let s = new HttpSerializer(req, noHeaders)
             r += s.toCurl() + " ;\n\n"
         }
         exportFile(r, 'curl.txt');
@@ -301,7 +270,7 @@ function HttpExporter() {
     const exportHttpRunner = (reqs) => {
         let r = '';
         for(let req of reqs){
-            let s = new HttpSerializer(req)
+            let s = new HttpSerializer(req, noHeaders)
             r += s.toHttpRunnerYaml() + "\n"
         }
         exportFile(r, 'HttpRunner.yml');
@@ -313,7 +282,7 @@ function HttpExporter() {
     const exportHttpBoot = (reqs) => {
         let r = '';
         for(let req of reqs){
-            let s = new HttpSerializer(req)
+            let s = new HttpSerializer(req, noHeaders)
             r += s.toHttpBootYaml() + "\n"
         }
         exportFile(r, 'HttpBoot.yml');
@@ -358,9 +327,9 @@ function HttpExporter() {
     const renderUrl = (row) => {
         let url = row.url
         // 获得uri
-        let uri = getUri(url)
+        let uri = url.replace(httpDomainReg, '')
         if(uri == ''){ // 空则取域名
-            uri = getDomain(url)
+            uri = parseDomain(url)
         }else{ //截取指定长度, 并加上省略号
             let len = 50
             uri = uri.length > len ? uri.slice(0, len) + "..." : uri;
@@ -374,7 +343,7 @@ function HttpExporter() {
         return <Dropdown value={options.value} options={methods} onChange={(e) => options.filterApplyCallback(e.value)} placeholder="搜索" className="p-column-filter" showClear />;
     }
 
-    const types = ['script', 'document', 'image', 'stylesheet', 'xhr', 'other']
+    const types = ['document', 'xhr', 'script', 'image', 'stylesheet', 'font', 'other']
 
     const renderTypeFilter = (options) => {
         return <MultiSelect value={options.value} options={types} onChange={(e) => setTypeFilter(e.value) } placeholder="搜索" className="p-column-filter" maxSelectedLabels={1} />;
@@ -415,9 +384,12 @@ function HttpExporter() {
             <span className="p-input-icon-left w-full md:w-auto">
                 <i className="pi pi-search" />
                 <InputText value={wd} type="search" onInput={(e) => setGlobalFilter(e.target.value)} placeholder="Search..." className="w-full lg:w-auto" />
-                 {" "}
-                <label htmlFor="cb" className="p-checkbox-label">仅本站点</label>
-                <Checkbox inputId="cb" onChange={onOnlyCurrSiteChange} checked={onlyCurrSite}></Checkbox>
+            </span>
+            <span className="p-input-icon-left w-full md:w-auto">
+                <Checkbox inputId="onlyCurrSite" onChange={onOnlyCurrSiteChange} checked={onlyCurrSite}></Checkbox>
+                <label htmlFor="onlyCurrSite" className="p-checkbox-label">仅本站点</label>
+                <Checkbox inputId="noHeaders" onChange={(e) => setNoHeaders(e.checked) } checked={noHeaders}></Checkbox>
+                <label htmlFor="noHeaders" className="p-checkbox-label">不导出Headers</label>
             </span>
             <div className="mt-3 md:mt-0 flex justify-content-end">
                 <Button icon="pi pi-trash" className="p-button-danger" onClick={deleteSelectedReqs} disabled={!selectedReqs || !selectedReqs.length} tooltip="删除" tooltipOptions={{position: 'bottom'}} />

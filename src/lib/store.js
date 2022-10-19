@@ -1,6 +1,6 @@
 // 读单项
 function readStore(key){
-  var val = localStorage[key];
+  let val = localStorage[key];
   if (val)
     return JSON.parse(val);
   
@@ -9,7 +9,7 @@ function readStore(key){
 
 // 写单项
 function writeStore(key, value){
-  var json = JSON.stringify(value);
+  let json = JSON.stringify(value);
   localStorage[key] = json;
 }
 
@@ -34,9 +34,24 @@ function clearStores(){
   localStorage.clear();
 }
 
+// 读单项, 如果不存在则写
+function readOrWriteStore(key, defaultValue = null){
+  let value = readStore(key)
+  if(typeof(value) == "undefined"){
+    writeStore(key, defaultValue)
+    return defaultValue
+  }
+
+  return value
+}
+
 // 从 localStorage 读配置
 function readOption(key) {
-  var opt = readStore("options")
+  let opt = readOrWriteStore("options", {
+    notePostUrl: '',
+    mqServerUrl: '',
+    autoConnectMqServer: false
+  })
   return opt[key]
 }
 

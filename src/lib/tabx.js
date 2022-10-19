@@ -1,4 +1,6 @@
 /* global chrome */
+import { genUuid, getFormatDateTime, isHttpUrl } from './util'
+
 /**
  * 关闭所有window
  */
@@ -54,16 +56,6 @@ function getAllHttpTabs(callback){
 }
 
 /**
- * 是否http协议的url
- * @param url
- * @returns {boolean}
- */
-function isHttpUrl(url){
-    let reg = /https?:\/\/.+/i;
-    return url.match(reg) != null
-}
-
-/**
  * 根据url过滤tab
  * @param url
  * @param callback 回调，接收1个参数 tab
@@ -101,7 +93,7 @@ function openOrSwitchTab(url){
 // tab对象转实体
 function tab2entity(tab) {
     let page = {
-        id: createId(),
+        id: genUuid(),
         name: tab.title,
         url: tab.url,
         date: getFormatDateTime()
@@ -109,33 +101,10 @@ function tab2entity(tab) {
     return page;
 }
 
-// 创建id
-function createId() {
-    let id = '';
-    let chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    for (let i = 0; i < 5; i++) {
-        id += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return id;
-}
-
-// 格式化日期
-function getFormatDateTime(){
-    var date = new Date();
-    var year= date.getFullYear();
-    var month = date.getMonth() + 1;
-    var day = date.getDate();
-    var hour = date.getHours();
-    var minute = date.getMinutes();
-    var second = date.getSeconds();
-    return [year, '-', month , '-', day, ' ', hour , ':', minute, ':', second ].join('');
-}
-
 const tabx = {
     closeAllWins,
     getAllTabs,
     getAllHttpTabs,
-    isHttpUrl,
     getTabByUrl,
     openOrSwitchTab,
     tab2entity
