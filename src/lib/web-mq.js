@@ -12,28 +12,43 @@ function connectMqServer(url) {
   console.log('开始连接消息服务器')
 
   let [domain, path] = splitDomainAndPath(url)
+  const reconnectionAttempts = 5 // 最大重连次数
   const manager = new Manager(domain, {
-    autoConnect: false
+    autoConnect: false,
+    reconnectionAttempts
   });
   socket = manager.socket(path);
   // socket.id属性标识socket
   // console.log(socket)
-  socket.on('reconnecting', function (attemptNumber) {
-    console.log('尝试重建ws连接')
+  
+  // manager负责重连的事件, 参考 manager源码中的 this.emitReserved(事件名) 调用, 事件有 error/open/ping/packet/error/close/reconnect_failed/reconnect_attempt/reconnect_error/reconnect
+  manager.on('reconnect_attempt', function (attemptNumber) {
+    console.log(`第${attemptNumber}次尝试重连`)
   });
+  manager.on('reconnect', function (attemptNumber) {
+    console.log(`第${attemptNumber}次重连成功`)
+  });
+  manager.on('reconnect_failed', function () {
+    let msg = '重连失败次数到 ' + reconnectionAttempts + '次，停止重连并关闭连接'
+    console.log(msg)
+    modalBg.toast(msg)
+    socket.close()
+  });
+  manager.on('reconnect_error', function (err) {
+    console.log(`单次重连错误: ${err}`)
+  });
+
+  // socket事件, 参考 socket源码中的 this.emitReserved(事件名) 调用, 事件有 connect/connect_error/disconnect
   socket.on('connect', function () {
     let msg = 'ws连接成功'
     console.log(msg)
     modalBg.toast(msg)
   });
+  socket.on('connect_error', function (err) {
+    console.log(`连接错误: ${err}`)
+  });
   socket.on('disconnect', function (reason) {
     console.log('断开ws连接:' + reason)
-  });
-  socket.on('reconnect', function (attemptNumber) {
-    console.log('重新ws连接成功')
-  });
-  socket.on('reconnect_failed', function () {
-    console.log('重连失败')
   });
   // 显示channel订阅显示消息  
   socket.on('message', handleWebMq);
@@ -42,23 +57,29 @@ function connectMqServer(url) {
     console.log(ack.request + '响应:' + ack.respone + ':' + ack.reply);        
   });
   // 连接, 有(失败)回调
-  var failNum = 0
   manager.open((err) => { 
+    let msg = ''
     if (err) {
       // an error has occurred
-      if(++failNum >= 5){
-        let msg = '连接失败次数达到5次，直接关闭连接'
-        console.log(msg);
-        modalBg.toast(msg)
-        socket.close()
-      }else{ // 重连
-        console.log(`第${failNum}次失败重连`);
+      msg = `首次连接错误: ${err} => `
+      if(reconnectionAttempts >= 1){ // 重连
+        msg += '重连'
         manager.maybeReconnectOnOpen()
+      }else{
+        msg += '不重连'
       }
     } else {
       // the connection was successfully established
-      console.log('ws连接成功')  
+      msg = 'ws连接成功'
     }
+    console.log(msg)
+    modalBg.confirm({
+      title: '连接错误',
+      message: msg + ';\n请确保你启动了消息服务器，了解详情?',
+      confirm:function(){
+        window.open('https://gitee.com/l0km/webredis', "消息服务器", "");
+      },
+    })
   });
   return socket;
 }
