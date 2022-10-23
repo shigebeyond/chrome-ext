@@ -76,7 +76,7 @@ function OptionForm() {
                             )} />
                             <label htmlFor="mqServerUrl" className={classNames({ 'p-error': !!errors.mqServerUrl })}>消息服务器地址*</label>
                         </span>
-                        <a target="blank" href='https://gitee.com/l0km/webredis'>了解消息服务器</a>
+                        <a target="blank" href='https://gitee.com/shigebeyond/webredis'>了解消息服务器</a>
                         {getFormErrorMessage('mqServerUrl')}
                     </div>
                     <div className="mb-5 flex align-items-center">

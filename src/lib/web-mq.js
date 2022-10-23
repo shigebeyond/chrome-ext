@@ -77,7 +77,7 @@ function connectMqServer(url) {
       title: '连接错误',
       message: msg + ';\n请确保你启动了消息服务器，了解详情?',
       confirm:function(){
-        window.open('https://gitee.com/l0km/webredis', "消息服务器", "");
+        window.open('https://gitee.com/shigebeyond/webredis', "消息服务器", "");
       },
     })
   });
