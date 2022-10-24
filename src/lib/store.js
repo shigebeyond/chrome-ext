@@ -1,3 +1,5 @@
+import _ from 'lodash';
+
 // 读单项
 function readStore(key){
   let val = localStorage[key];
@@ -19,6 +21,11 @@ function appendStore(key, value){
   if(Array.isArray(value)){ // 数组合并
     arr = arr.concat(value)
   }else{
+    // bug: 快捷键 backup-current不懂为啥，只调用一次，但备份数据插入了2次
+    // fix: 检查去重
+    let i = _.findIndex(arr, (o) => o.url == value.url );
+    if(i != -1)
+      return
     arr.push(value)
   }
   writeStore(key, arr)

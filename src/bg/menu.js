@@ -135,17 +135,29 @@ chrome.contextMenus.create({
     id: '7',//一级菜单的id
     contexts: ['page'], // page表示页面右键就会有这个菜单，如果想要当选中文字时才会出现此右键菜单，用：selection
     onclick: function (params) {
-        chrome.tabs.getSelected(null, function (tab) {
-            if(!isHttpUrl(tab.url)){
-                alert('忽略非http协议的标签页')
-                return
-            }
-            store.appendStore("backupTabs", tabx.tab2entity(tab))
-            //modalBg.toast('备份成功', 1)
-            chrome.tabs.remove(tab.id)
-        })
+        backupCurrentTab()
     }
 });
+// 监听manifest.json中设置的快捷键
+chrome.commands.onCommand.addListener(function (command) {
+    if (command === "backup-current") {
+        // bug: 不懂为啥，只调用一次，但备份数据插入了2次
+        // fix: store.appendStore() 实现去重
+        backupCurrentTab()
+    }
+});
+function backupCurrentTab(){
+    chrome.tabs.getSelected(null, function (tab) {
+        if(!isHttpUrl(tab.url)){
+            alert('忽略非http协议的标签页')
+            return
+        }
+        console.log('备份标签页: ' + tab.url)
+        store.appendStore("backupTabs", tabx.tab2entity(tab))
+        //modalBg.toast('备份成功', 1)
+        chrome.tabs.remove(tab.id)
+    })
+}
 
 // 8 备份所有标签页
 chrome.contextMenus.create({
@@ -153,22 +165,26 @@ chrome.contextMenus.create({
     id: '8',//一级菜单的id
     contexts: ['page'], // page表示页面右键就会有这个菜单，如果想要当选中文字时才会出现此右键菜单，用：selection
     onclick: function (params) {
-        tabx.getAllHttpTabs(function (tabs) {
-            let entities = tabs.map(tabx.tab2entity)
-            store.appendStore("backupTabs", entities)
-            modalBg.confirm({
-                title: '提示',
-                message: '已备份成功, 是否关闭所有标签页?',
-                confirm: function () {
-                    // 关闭所有窗口
-                    tabx.closeAllWins()
-                    // 打开标签页管理页面
-                    openBackupTabsPage()
-                }
-            })
-        })
+        backupAllTabs()        
     }
 });
+
+function backupAllTabs(){
+    tabx.getAllHttpTabs(function (tabs) {
+        let entities = tabs.map(tabx.tab2entity)
+        store.appendStore("backupTabs", entities)
+        modalBg.confirm({
+            title: '提示',
+            message: '已备份成功, 是否关闭所有标签页?',
+            confirm: function () {
+                // 关闭所有窗口
+                tabx.closeAllWins()
+                // 打开标签页管理页面
+                openBackupTabsPage()
+            }
+        })
+    })
+}
 
 // 9 管理备份的标签页
 chrome.contextMenus.create({

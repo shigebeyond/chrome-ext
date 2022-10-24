@@ -26,6 +26,15 @@
           "js": ["static/js/zhihu-copy.js"]
         }
     ],
+    "commands": {
+        "backup-current": {
+            "suggested_key": {
+                "default": "Alt+B",
+                "mac": "Alt+B"
+            },
+            "description": "__MSG_backupCurrentTab__"
+        }
+    },
     "permissions":
     [
         "contextMenus", 
