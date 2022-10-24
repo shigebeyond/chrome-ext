@@ -184,14 +184,14 @@ class HttpSerializer {
         }
         let status = this.getExpectedStatus()
         let yaml = `- ${method}:
-    url: ${url}
-    headers: 
-        ${headers}
-    data: 
-        ${data}
-    validate_by_jsonpath:
-        '$.code':
-            '=': ${status}`;
+	url: ${url}
+	headers: 
+		${headers}
+	data: 
+		${data}
+	validate_by_jsonpath:
+		'$.code':
+			'=': ${status}`;
         yaml = yaml.replace(/\n\s+headers:\s+null/g, '').replace(/\n\s+data:\s+null/g, '')
         return yaml
     }
@@ -218,18 +218,18 @@ class HttpSerializer {
         }
         let status = this.getExpectedStatus()
         let yaml = `- test:
-    name: ${name}
-    request:
-        url: ${url}
-        method: ${method}
-        headers: 
-            ${headers}
-        params: 
-            ${params}
-        data: 
-            ${data}
-    validate:
-        - eq: ['status_code', ${status}]`;
+	name: ${name}
+	request:
+		url: ${url}
+		method: ${method}
+		headers: 
+			${headers}
+		params: 
+			${params}
+		data: 
+			${data}
+	validate:
+		- eq: ['status_code', ${status}]`;
         yaml = yaml.replace(/\n\s+headers:\s+null/g, '').replace(/\n\s+params:\s+null/g, '').replace(/\n\s+data:\s+null/g, '')
         return yaml
     }
