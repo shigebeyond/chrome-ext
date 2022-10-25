@@ -105,7 +105,11 @@ function initMq(){
         modalBg.toast('未配置选项: mqServerUrl', 1)
         return
     }
-    wmq.connectMqServer(mqServerUrl)
+    wmq.connectMqServer(mqServerUrl, subRemoteOpen)
+}
+
+// 监听mq：远程打开
+function subRemoteOpen(){
     // 监听mq：远程打开
     wmq.subWebMq('remote_open', function(mq, own){
         if(own){
@@ -113,10 +117,10 @@ function initMq(){
             return
         }
         let url = mq
-        window.open(url, "远程打开", "");
+        //window.open(url, "远程打开", "");
+        chrome.tabs.create({ url: url });
     });
 }
-
 
 // 6 远程打开相同网页：发mq
 chrome.contextMenus.create({

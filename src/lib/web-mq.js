@@ -8,18 +8,18 @@ import { splitDomainAndPath } from './util';
 // mq server是基于websocket+redis+nodejs实现web端消息推送： https://gitee.com/shigebeyond/webredis
 // 使用websocket连接mq server：参见sock.io API文档事件(Event)说明 https://socket.io/docs/client-api
 var socket = null;
-function connectMqServer(url) {
+function connectMqServer(url, callback) {
   console.log('开始连接消息服务器')
 
   let [domain, path] = splitDomainAndPath(url)
-  const reconnectionAttempts = 5 // 最大重连次数
+  const reconnectionAttempts = 0 // 最大重连次数，若要配合调用 callback 则要设为0
   const manager = new Manager(domain, {
     autoConnect: false,
     reconnectionAttempts
   });
-  socket = manager.socket(path);
+  socket = manager.socket(path || '/');
   // socket.id属性标识socket
-  // console.log(socket)
+  // console.log('创建socket: ' + JSON.stringify(socket))
   
   // manager负责重连的事件, 参考 manager源码中的 this.emitReserved(事件名) 调用, 事件有 error/open/ping/packet/error/close/reconnect_failed/reconnect_attempt/reconnect_error/reconnect
   manager.on('reconnect_attempt', function (attemptNumber) {
@@ -56,7 +56,10 @@ function connectMqServer(url) {
   socket.on('ack', function (ack) {
     console.log(ack.request + '响应:' + ack.respone + ':' + ack.reply);        
   });
-  // 连接, 有(失败)回调
+  // 连接方式1，但无回调，而 socket.connect() = socket.subEvents() + Manager.open()
+  // socket.connect()
+  // 连接方式2, 有(失败)回调
+  socket.subEvents()
   manager.open((err) => { 
     let msg = ''
     if (err) {
@@ -70,16 +73,26 @@ function connectMqServer(url) {
       }
     } else {
       // the connection was successfully established
-      msg = 'ws连接成功'
+      msg = '首次ws连接成功'
+      if(!socket.connected){
+        socket.onconnect() // 标记连接成功
+      }
+      if(callback){
+        callback()
+      }
     }
     console.log(msg)
-    modalBg.confirm({
-      title: '连接错误',
-      message: msg + ';\n请确保你启动了消息服务器，了解详情?',
-      confirm:function(){
-        window.open('https://gitee.com/shigebeyond/webredis', "消息服务器", "");
-      },
-    })
+    if (err) {
+      modalBg.confirm({
+        title: '连接错误',
+        message: msg + ';\n请确保你启动了消息服务器，了解详情?',
+        confirm:function(){
+          window.open('https://gitee.com/shigebeyond/webredis', "消息服务器", "");
+        },
+      })
+    }else{
+      modalBg.toast(msg)
+    }
   });
   return socket;
 }
@@ -101,9 +114,11 @@ function reconnectMqServer(){
 
   console.log('消息服务器地址变化了，要重连: ' + url)
   // 连接
-  connectMqServer(url);
+  connectMqServer(url, resubMq);
+}
 
-  // 恢复监听
+// 恢复监听
+function resubMq(){
   for(let c in webMqCallbacks){
     let callback = webMqCallbacks[c]
     subWebMq(c, callback)
