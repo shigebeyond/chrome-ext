@@ -28,9 +28,13 @@ chrome.contextMenus.create({
             });
             // 提交后端
             let post_url = store.readOption('notePostUrl');
-            $.post(post_url, {note: note}, function(result){
-                modalBg.toast(result)
-            });
+            if(post_url){
+                $.post(post_url, {note: note}, function(result){
+                    modalBg.toast(result)
+                });
+            }else{
+                modalBg.toast('true')
+            }
         });
     }
 });
@@ -102,7 +106,9 @@ function initMq(){
     // 连接mq server
     let mqServerUrl = store.readOption('mqServerUrl');
     if(mqServerUrl == ''){
-        modalBg.toast('未配置选项: mqServerUrl', 1)
+        let msg = '未配置选项: mqServerUrl'
+        console.log(msg)
+        modalBg.toast(msg, 1)
         return
     }
     wmq.connectMqServer(mqServerUrl, subRemoteOpen)
