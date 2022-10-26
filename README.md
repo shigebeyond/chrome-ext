@@ -17,7 +17,17 @@
 git clone https://github.com/shigebeyond/chrome-ext.git
 ```
 
-2. 将源码目录拖到chrome扩展程序页面
+2. 安装依赖
+```
+npm i
+``` 
+
+3. 编译
+```
+npm run build
+```
+
+4. 将`build/`目录拖到chrome扩展程序页面
 
 # 功能
 ## 1. 选项配置
