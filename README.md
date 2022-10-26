@@ -1,15 +1,17 @@
 [GitHub](https://github.com/shigebeyond/chrome-ext) | [Gitee](https://gitee.com/shigebeyond/chrome-ext) 
 
+chrome扩展包，包含一系列提升个人学习、工作效率的工具
+
 # 缘由
 看知乎上有些回答挺好，想复制下来，结果被限制复制(禁止转载)。
 
 但难不住作为程序员的我，通过在devtool中写js，也能打印出回答对应的html标签的内容。
 
-但是每次都写js很繁琐，因此想做成chrome扩展，直接将回答文本复制到内存(剪切板)。
+但是每次都写js很繁琐，因此想做成chrome扩展，直接双击就能将回答文本复制到内存(剪切板)。
 
-后续慢慢扩展，实现了翻译、远程打开、备份标签页、http请求复制与导出(curl/HttpRunner/HttpBoot)等功能
+后续逐渐扩展功能，陆续实现了翻译、远程打开、备份标签页、http请求复制与导出(curl/HttpRunner/HttpBoot)等功能
 
-用到的技术包含: es6, react18, primereact, [webredis](https://gitee.com/shigebeyond/webredis)
+用到的技术包含: es6, react18, [primereact-UI库](https://www.primefaces.org/primereact/), [webredis-消息服务器](https://gitee.com/shigebeyond/webredis)
 
 # 安装
 1. 下载源码
