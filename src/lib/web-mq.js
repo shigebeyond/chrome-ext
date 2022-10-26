@@ -9,6 +9,12 @@ import { splitDomainAndPath } from './util';
 // 使用websocket连接mq server：参见sock.io API文档事件(Event)说明 https://socket.io/docs/client-api
 var socket = null;
 function connectMqServer(url, callback) {
+  if(socket != null && socket.connected){
+    let msg = '已有连接: ' + socket.id
+    console.log(msg)
+    modalBg.toast(msg)
+    return
+  }
   console.log('开始连接消息服务器')
 
   let [domain, path] = splitDomainAndPath(url)
@@ -40,9 +46,7 @@ function connectMqServer(url, callback) {
 
   // socket事件, 参考 socket源码中的 this.emitReserved(事件名) 调用, 事件有 connect/connect_error/disconnect
   socket.on('connect', function () {
-    let msg = 'ws连接成功'
-    console.log(msg)
-    modalBg.toast(msg)
+    console.log('ws连接成功: ' + socket.id)
   });
   socket.on('connect_error', function (err) {
     console.log(`连接错误: ${err}`)
@@ -73,7 +77,7 @@ function connectMqServer(url, callback) {
       }
     } else {
       // the connection was successfully established
-      msg = '首次ws连接成功'
+      msg = '首次ws连接成功: ' + socket.id
       if(!socket.connected){
         socket.onconnect() // 标记连接成功
       }
