@@ -9,7 +9,7 @@
 
 后续慢慢扩展，实现了翻译、远程打开、备份标签页、http请求导出等功能
 
-用到的技术包含: es6, react18, primereact
+用到的技术包含: es6, react18, primereact, [webredis](https://gitee.com/shigebeyond/webredis)
 
 # 安装
 1. 下载源码
@@ -62,7 +62,7 @@ echo $r ? 'true' : 'false';
 
 通过 [socket.io](https://github.com/socketio/socket.io-client) 来连接到配置的消息服务器(如 http://127.0.0.1:16379)
 
-在连接前，请确保启动了消息服务器，详细参考 [webredis](https://gitee.com/l0km/webredis)
+在连接前，请确保启动了消息服务器，详细参考 [webredis](https://gitee.com/shigebeyond/webredis)
 
 目前消息只支持：远程打开
 
