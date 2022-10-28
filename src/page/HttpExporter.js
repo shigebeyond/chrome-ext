@@ -164,8 +164,9 @@ function HttpExporter() {
         })
     }
 
-    const showToast = (msg) => {
-        toast.current.show({severity: 'success', summary: 'Successful', detail: msg, life: 3000});
+    const showToast = (msg, success = true) => {
+        let label = success ? 'success' : 'error'
+        toast.current.show({severity: label, summary: _.capitalize(label), detail: msg, life: 3000});
     }
 
     /**
@@ -253,6 +254,15 @@ function HttpExporter() {
     }
 
     /**
+     * 复制LocustBoot
+     */
+    const copyLocustBoot = (req) => {
+        let s = new HttpSerializer(req, noHeaders)
+        let r = s.toLocustBootYaml()
+        copy(r, 'LocustBoot');
+    }
+
+    /**
      * 导出curl
      */
     const exportCurl = (reqs) => {
@@ -286,6 +296,19 @@ function HttpExporter() {
             r += s.toHttpBootYaml() + "\n"
         }
         exportFile(r, 'HttpBoot.yml');
+    }
+
+    /**
+     * 导出LocustBoot
+     */
+    const exportLocustBoot = (reqs) => {
+        try{
+            let s = new HttpSerializer()
+            let r = s.toLocustBootYamls(reqs, noHeaders)
+            exportFile(r, 'LocustBoot.yml');
+        } catch (error) {
+            showToast(error.message, false)
+        }
     }
 
     // 导出(保存)文件
@@ -374,6 +397,7 @@ function HttpExporter() {
                 <Button label="复制Curl" className="p-button-success" onClick={() => copyCurl(row)} tooltip="复制Curl命令" tooltipOptions={{position: 'bottom'}} />
                 <Button label="复制HttpRunner" className="p-button-info" onClick={() => copyHttpRunner(row)} tooltip="复制HttpRunner yaml脚本" tooltipOptions={{position: 'bottom'}} />
                 <Button label="复制HttpBoot" className="p-button-warning" onClick={() => copyHttpBoot(row)} tooltip="复制HttpBoot yaml脚本" tooltipOptions={{position: 'bottom'}} />
+                <Button label="复制LocustBoot" className="p-button-help" onClick={() => copyLocustBoot(row)} tooltip="复制LocustBoot yaml脚本" tooltipOptions={{position: 'bottom'}} />
             </React.Fragment>
         );
     }
@@ -396,6 +420,7 @@ function HttpExporter() {
                 <Button label="导出Curl" className="p-button-success" disabled={!selectedReqs || !selectedReqs.length} onClick={() => exportCurl(selectedReqs)} tooltip="导出Curl命令" tooltipOptions={{position: 'bottom'}} />
                 <Button label="导出HttpRunner" className="p-button-info" disabled={!selectedReqs || !selectedReqs.length} onClick={() => exportHttpRunner(selectedReqs)} tooltip="导出HttpRunner yaml脚本" tooltipOptions={{position: 'bottom'}} />
                 <Button label="导出HttpBoot" className="p-button-warning" disabled={!selectedReqs || !selectedReqs.length} onClick={() => exportHttpBoot(selectedReqs)} tooltip="导出HttpBoot yaml脚本" tooltipOptions={{position: 'bottom'}} />
+                <Button label="导出LocustBoot" className="p-button-help" disabled={!selectedReqs || !selectedReqs.length} onClick={() => exportLocustBoot(selectedReqs)} tooltip="导出LocustBoot yaml脚本" tooltipOptions={{position: 'bottom'}} />
             </div>
         </div>
     );

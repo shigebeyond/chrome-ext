@@ -1,6 +1,6 @@
 // import querystring from 'querystring';
 import _ from 'lodash';
-import { parseUrl } from './util'
+import { parseUrl, splitDomainAndPath } from './util'
 
 /**
  * http请求序列化器 
@@ -9,6 +9,16 @@ import { parseUrl } from './util'
 class HttpSerializer {
 
     constructor(req, noHeaders = false) {
+        if(req == null) // 仅用于 toLocustBootYamls()
+            return;
+
+        this.init(req, noHeaders)
+    }
+
+    /**
+     * 初始化请求
+     */
+    init(req, noHeaders = false) {
         // 克隆，以便不修改原请求属性
         this.req = _.cloneDeepWith(req);
         // 修改请求属性
@@ -158,7 +168,8 @@ class HttpSerializer {
      * @return string
      */
     buildYamlProps(data, nIndent){
-        let indent = "\t".repeat(nIndent)
+        // yaml语法要求用2个空格缩进
+        let indent = "  ".repeat(nIndent)
         let s = this.buildCurlQuery(data, ': ', "\n" + indent);    
         if(s == '')
             return null
@@ -166,38 +177,7 @@ class HttpSerializer {
     }
 
     /**
-     * 转为 HttpBoot 的yaml脚本
-     */
-    toHttpBootYaml()
-    {
-        let method = this.req.method.toLowerCase();
-        let isPost = method == 'post';
-        let url = this.req.url;
-        let data = null;
-        let headers = this.buildYamlProps(this.req.headers, 2);
-        if(isPost){
-            if(typeof(this.req.postData) != "undefined")
-                data = this.buildYamlProps(this.req.postData.params, 2);
-        }else{
-            url = url.split('?')[0] // 干掉query string
-            data = this.buildYamlProps(this.req.queryString, 2);
-        }
-        let status = this.getExpectedStatus()
-        let yaml = `- ${method}:
-	url: ${url}
-	headers: 
-		${headers}
-	data: 
-		${data}
-	validate_by_jsonpath:
-		'$.code':
-			'=': ${status}`;
-        yaml = yaml.replace(/\n\s+headers:\s+null/g, '').replace(/\n\s+data:\s+null/g, '')
-        return yaml
-    }
-
-    /**
-     * 转为 HttpRunner 的yaml脚本
+     * 当前请求转为 HttpRunner 的yaml脚本
      */
     toHttpRunnerYaml()
     {
@@ -208,31 +188,143 @@ class HttpSerializer {
         let name = parseUrl(url).path
         let params = null;
         let data = null;
+        let headers = this.buildYamlProps(this.req.headers, 4);
+        if(isPost){
+            if(typeof(this.req.postData) != "undefined")
+                data = this.buildYamlProps(this.req.postData.params, 4);
+        }else{
+            url = url.split('?')[0] // 干掉query string
+            params = this.buildYamlProps(this.req.queryString, 4);
+        }
+        let status = this.getExpectedStatus()
+        // yaml语法要求用2个空格缩进
+        let yaml = `- test:
+    name: ${name}
+    request:
+      url: ${url}
+      method: ${method}
+      headers: 
+        ${headers}
+      params: 
+        ${params}
+      data: 
+        ${data}
+    validate:
+      - eq: ['status_code', ${status}]`;
+        yaml = yaml.replace(/\n\s+headers:\s+null/g, '').replace(/\n\s+params:\s+null/g, '').replace(/\n\s+data:\s+null/g, '')
+        return yaml
+    }
+
+    /**
+     * 当前请求转为 HttpBoot 的yaml脚本
+     */
+    toHttpBootYaml()
+    {
+        let method = this.req.method.toLowerCase();
+        let isPost = method == 'post';
+        let url = this.req.url;
+        let data = null;
         let headers = this.buildYamlProps(this.req.headers, 3);
         if(isPost){
             if(typeof(this.req.postData) != "undefined")
                 data = this.buildYamlProps(this.req.postData.params, 3);
         }else{
             url = url.split('?')[0] // 干掉query string
-            params = this.buildYamlProps(this.req.queryString, 3);
+            data = this.buildYamlProps(this.req.queryString, 3);
         }
         let status = this.getExpectedStatus()
-        let yaml = `- test:
-	name: ${name}
-	request:
-		url: ${url}
-		method: ${method}
-		headers: 
-			${headers}
-		params: 
-			${params}
-		data: 
-			${data}
-	validate:
-		- eq: ['status_code', ${status}]`;
-        yaml = yaml.replace(/\n\s+headers:\s+null/g, '').replace(/\n\s+params:\s+null/g, '').replace(/\n\s+data:\s+null/g, '')
+        // yaml语法要求用2个空格缩进
+        let yaml = `- ${method}:
+    url: ${url}
+    headers: 
+      ${headers}
+    data: 
+      ${data}
+    validate_by_jsonpath:
+      '$.code':
+        '=': ${status}`;
+        yaml = yaml.replace(/\n\s+headers:\s+null/g, '').replace(/\n\s+data:\s+null/g, '')
         return yaml
     }
+
+    /**
+     * 当前请求转为 LocustBoot 的yaml脚本
+     */
+    toLocustBootYaml()
+    {
+        // 1 生成http部分yaml
+        let [domain, httpYaml] = this.buildHttpPartYaml()
+
+        // 2 生成locust部分yaml，其中 http部分yaml 作为 task 下级
+        return this.buildLocustPartYaml(domain, httpYaml)
+    }
+
+    /**
+     * 将多个请求转为 LocustBoot 的yaml脚本
+     */
+    toLocustBootYamls(reqs, noHeaders = false)
+    {
+        if(reqs.length == 0)
+            return ''
+
+        // 分割域名与路径，域名作为locust的host
+        let [onlyDomain, _] = splitDomainAndPath(reqs[0].url)
+
+        // 1 生成http部分yaml
+        let httpYamls = ''
+        for(let req of reqs){
+            // 更换当前请求
+            this.init(req, noHeaders)
+            // 生成http部分yaml
+            let [domain, yaml] = this.buildHttpPartYaml()
+            // 检查是否唯一域名
+            if(onlyDomain != domain){
+                throw new Error('LocustBoot 的yaml脚本出错: 多个请求必须在同一个域名下')
+            }
+            httpYamls += yaml + "\n"
+        }
+
+        // 2 生成locust部分yaml，其中 http部分yaml 作为 task 下级
+        return this.buildLocustPartYaml(onlyDomain, httpYamls)
+    }
+
+
+    /**
+     * 生成 LocustBoot 中 http部分yaml
+     * @param domain
+     * @param httpYaml HttpBoot的yaml脚本 
+     */
+    buildHttpPartYaml()
+    {
+        // 分割域名与路径，域名作为locust的host
+        let [domain, path] = splitDomainAndPath(this.req.url)
+        // 路径作为HttpBoot的相对url
+        this.req.url = path
+        // 转为 HttpBoot yaml
+        let yaml = this.toHttpBootYaml()
+        return [domain, yaml]
+    }
+
+    /**
+     * 生成 LocustBoot 中 locust部分yaml，其中 http部分yaml 作为 task 下级
+     * @param domain
+     * @param httpYaml http部分yaml，即HttpBoot的yaml脚本 
+     */
+    buildLocustPartYaml(domain, httpYaml)
+    {
+        // 要缩进一层，因为要挂到 task 下级
+        httpYaml = httpYaml.replace(/\n/g, "\n  ")
+
+        // yaml语法要求用2个空格缩进
+        return `base_url: ${domain}
+on_start:
+  - print: 开始
+task:
+  ${httpYaml}
+on_stop:
+  - print: 结束`;
+    }
+
 }
 
 export default HttpSerializer
