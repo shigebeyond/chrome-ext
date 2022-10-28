@@ -10,6 +10,7 @@ import { InputTextarea } from 'primereact/inputtextarea';
 import { Dialog } from 'primereact/dialog';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 import { InputText } from 'primereact/inputtext';
+import _ from 'lodash';
 import { parseDomain } from '../lib/util';
 import 'primereact/resources/themes/saga-blue/theme.css';
 import 'primereact/resources/primereact.min.css';
@@ -69,8 +70,9 @@ function TabList() {
         setTabDialog(false);
     }
 
-    const showToast = (msg) => {
-        toast.current.show({severity: 'success', summary: 'Successful', detail: msg, life: 3000});
+    const showToast = (msg, success = true) => {
+        let label = success ? 'success' : 'error'
+        toast.current.show({severity: label, summary: _.capitalize(label), detail: msg, life: 3000});
     }
 
     /**

@@ -5,6 +5,7 @@ import { Button } from 'primereact/button';
 import { Checkbox } from 'primereact/checkbox';
 import { Toast } from 'primereact/toast';
 import { classNames } from 'primereact/utils';
+import _ from 'lodash';
 import store from '../lib/store'
 
 // 存储的key
@@ -43,8 +44,9 @@ function OptionForm() {
         return errors[name] && <small className="p-error">{errors[name].message}</small>
     };
 
-    const showToast = (msg) => {
-        toast.current.show({severity: 'success', summary: 'Successful', detail: msg, life: 3000});
+    const showToast = (msg, success = true) => {
+        let label = success ? 'success' : 'error'
+        toast.current.show({severity: label, summary: _.capitalize(label), detail: msg, life: 3000});
     }
 
     return (
