@@ -11,7 +11,7 @@ chrome扩展包，包含一系列提升个人学习、工作效率的工具
 
 后续逐渐扩展功能，陆续实现了翻译、远程打开、备份标签页、http请求复制与导出(curl/HttpRunner/HttpBoot)等功能
 
-用到的技术包含: es6, react18, [primereact-UI库](https://www.primefaces.org/primereact/), [webredis-消息服务器](https://gitee.com/shigebeyond/webredis)
+用到的技术包含: es6, react18, [primereact-UI库](https://www.primefaces.org/primereact/), [webredis-消息服务器](https://gitee.com/shigebeyond/webredis), [socket.io](https://socket.io)
 
 # 安装
 1. 下载源码
@@ -114,7 +114,7 @@ echo $r ? 'true' : 'false';
 2. 详情
 ![](img/http-detail.png)
 
-3. 复制curl命令, 结果如下:
+3. 复制curl命令, 示例如下:
 ```
 # 无headers的curl命令
 curl 'https://www.ruanyifeng.com/blog/archives.html'   
@@ -139,7 +139,7 @@ curl 'https://www.ruanyifeng.com/blog/archives.html' \
   -H 'user-agent:Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36'   
 ```
 
-4. 复制HttpRunner的yaml脚本, 结果如下:
+4. 复制HttpRunner的yaml脚本, 示例如下:
 ```
 # 无headers的HttpRunner的yaml脚本
 - test:
@@ -178,7 +178,7 @@ curl 'https://www.ruanyifeng.com/blog/archives.html' \
 		- eq: ['status_code', 304]
 ```
 
-5. 复制HttpBoot的yaml脚本, 结果如下:
+5. 复制HttpBoot的yaml脚本, 示例如下:
 ```
 # 无headers的HttpBoot的yaml脚本
 - get:
@@ -210,4 +210,21 @@ curl 'https://www.ruanyifeng.com/blog/archives.html' \
 	validate_by_jsonpath:
 		'$.code':
 			'=': 304
+```
+
+6. 复制LocustBoot的yaml脚本, 示例如下:
+```
+base_url: http://localhost:8080
+on_start:
+  - print: 开始
+task:
+  - post:
+      url: /tenant/edit/bar
+      data: 
+        name: bar88
+      validate_by_jsonpath:
+        '$.code':
+          '=': 302
+on_stop:
+  - print: 结束
 ```

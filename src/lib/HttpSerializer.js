@@ -279,15 +279,15 @@ class HttpSerializer {
             let [domain, yaml] = this.buildHttpPartYaml()
             // 检查是否唯一域名
             if(onlyDomain != domain){
-                throw new Error('LocustBoot 的yaml脚本出错: 多个请求必须在同一个域名下')
+                throw new Error('生成 LocustBoot 的yaml脚本出错: 多个请求必须在同一个域名下')
             }
             httpYamls += yaml + "\n"
         }
+        httpYamls = httpYamls.slice(0, -1) // 去掉最后一个\n
 
         // 2 生成locust部分yaml，其中 http部分yaml 作为 task 下级
         return this.buildLocustPartYaml(onlyDomain, httpYamls)
     }
-
 
     /**
      * 生成 LocustBoot 中 http部分yaml

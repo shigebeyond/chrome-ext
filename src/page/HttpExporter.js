@@ -308,6 +308,7 @@ function HttpExporter() {
             exportFile(r, 'LocustBoot.yml');
         } catch (error) {
             showToast(error.message, false)
+            throw error
         }
     }
 
