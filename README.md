@@ -9,7 +9,7 @@ chrome扩展包，包含一系列提升个人学习、工作效率的工具
 
 但是每次都写js很繁琐，因此想做成chrome扩展，直接双击就能将回答文本复制到内存(剪切板)。
 
-后续逐渐扩展功能，陆续实现了翻译、远程打开、备份标签页、http请求复制与导出(curl/HttpRunner/HttpBoot)等功能
+后续逐渐扩展功能，陆续实现了翻译、远程打开、备份标签页、http请求复制与导出(curl/HttpRunner/HttpBoot/LocustBoot)等功能
 
 用到的技术包含: es6, react18, [primereact-UI库](https://www.primefaces.org/primereact/), [webredis-消息服务器](https://gitee.com/shigebeyond/webredis), [socket.io](https://socket.io)
 
@@ -105,8 +105,8 @@ echo $r ? 'true' : 'false';
 ![](img/http-exporter.png)
 
 监控当前网页中访问过的 http 请求，支持以下操作：
-- 对单个请求: 支持删除、打印、详情，也支持生成脚本并复制到剪切板，复制类型包含curl命令、HttpRunner的yaml脚本、HttpBoot的yaml脚本
-- 对选中的多个请求: 支持删除、搜索，也支持导出文件，导出类型包含curl命令、HttpRunner的yaml脚本、HttpBoot的yaml脚本
+- 对单个请求: 支持删除、打印、详情，也支持生成脚本并复制到剪切板，复制类型包含curl命令、HttpRunner的yaml脚本、HttpBoot的yaml脚本、LocustBoot的yaml脚本
+- 对选中的多个请求: 支持删除、搜索，也支持导出文件，导出类型包含curl命令、HttpRunner的yaml脚本、HttpBoot的yaml脚本、LocustBoot的yaml脚本
 
 1. 打印
 ![](img/http-print.png)
