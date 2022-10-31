@@ -47,7 +47,7 @@ function HttpExporter() {
     const [selectedReqs, setSelectedReqs] = useState(null);
     const [wd, setWd] = useState('');// 搜索词
     const [onlyCurrSite, setOnlyCurrSite] = useState(null);
-    const [noHeaders, setNoHeaders] = useState(null);
+    const [noHeaders, setNoHeaders] = useState(true);
     const toast = useRef(null);
     const dt = useRef(null);
 

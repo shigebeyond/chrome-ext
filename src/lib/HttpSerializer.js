@@ -154,10 +154,12 @@ class HttpSerializer {
      * 获得期望的响应码
      */
     getExpectedStatus(){
+        /*
         let s = this.req.status
         if(s >= 200 && s < 400) // 200-300之间是正常的响应码
             return s
-
+        */
+        // 写死200
         return 200
     }
 
@@ -240,8 +242,8 @@ class HttpSerializer {
       ${headers}
     data: 
       ${data}
-    validate_by_jsonpath:
-      '$.code':
+    validate_by_eval:
+      'response.status_code':
         '=': ${status}`;
         yaml = yaml.replace(/\n\s+headers:\s+null/g, '').replace(/\n\s+data:\s+null/g, '')
         return yaml
