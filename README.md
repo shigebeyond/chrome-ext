@@ -108,6 +108,8 @@ echo $r ? 'true' : 'false';
 - 对单个请求: 支持删除、打印、详情，也支持生成脚本并复制到剪切板，复制类型包含curl命令、HttpRunner的yaml脚本、HttpBoot的yaml脚本、LocustBoot的yaml脚本
 - 对选中的多个请求: 支持删除、搜索，也支持导出文件，导出类型包含curl命令、HttpRunner的yaml脚本、HttpBoot的yaml脚本、LocustBoot的yaml脚本
 
+用法参考[演示视频](https://www.zhihu.com/zvideo/1572950389674246144)
+
 1. 打印
 ![](img/http-print.png)
  
