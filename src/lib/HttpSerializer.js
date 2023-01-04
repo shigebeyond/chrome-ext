@@ -99,6 +99,23 @@ class HttpSerializer {
     }
 
     /**
+     * 强制转为string类型
+     */
+    forceString(val){
+        // 数字
+        //if(typeof(val) == "number")
+        if(/^\d+$/.test(val))
+            return `"${val}"`
+
+        // 包含双引号，要做转义
+        if(val.includes('"')){
+            val = val.replaceAll('"', '\\"')
+            val = `"${val}"`
+        }
+        return val;
+    }
+
+    /**
     * 构建query string
     *
     * @param array data
@@ -111,8 +128,14 @@ class HttpSerializer {
         // return querystring.stringify(data);
         let str = "";
         for (let v of data) {
+            // fix bug: 不能正确处理包含"的字符串 sec-ch-ua: "Google Chrome";v="95", "Chromium";v="95", ";Not A Brand";v="99"
+            // fix bug: requests.exceptions.InvalidHeader: Value for header {Content-Length: 24} must be of type str or bytes, not <class 'int'>
+            // 请求头 Content-Length 的值是int，必须显式声明为string
+            let val = v.value
+            if(v.name == 'Content-Length' || v.name == 'sec-ch-ua')
+                val = this.forceString(val);
             // 值不需要 encodeURIComponent()
-            str += `${v.name}${kvcon}${v.value}${sep}`;
+            str += `${v.name}${kvcon}${val}${sep}`;
         }
         // 去掉最后的分隔符
         /*if(str.slice(-sep.length) == sep){
@@ -192,8 +215,12 @@ class HttpSerializer {
         let data = null;
         let headers = this.buildYamlProps(this.req.headers, 4);
         if(isPost){
-            if(typeof(this.req.postData) != "undefined")
-                data = this.buildYamlProps(this.req.postData.params, 4);
+            if(typeof(this.req.postData) != "undefined"){
+                if(typeof(this.req.postData.params) != "undefined")
+                    data = this.buildYamlProps(this.req.postData.params, 4);
+                else
+                    data = this.forceString(this.req.postData.text); 
+            }
         }else{
             url = url.split('?')[0] // 干掉query string
             params = this.buildYamlProps(this.req.queryString, 4);
@@ -228,8 +255,12 @@ class HttpSerializer {
         let data = null;
         let headers = this.buildYamlProps(this.req.headers, 3);
         if(isPost){
-            if(typeof(this.req.postData) != "undefined")
-                data = this.buildYamlProps(this.req.postData.params, 3);
+            if(typeof(this.req.postData) != "undefined"){
+                if(typeof(this.req.postData.params) != "undefined")
+                    data = this.buildYamlProps(this.req.postData.params, 3);
+                else
+                    data = this.forceString(this.req.postData.text); 
+            }
         }else{
             url = url.split('?')[0] // 干掉query string
             data = this.buildYamlProps(this.req.queryString, 3);
