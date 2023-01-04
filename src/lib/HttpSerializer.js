@@ -132,7 +132,7 @@ class HttpSerializer {
             // fix bug: requests.exceptions.InvalidHeader: Value for header {Content-Length: 24} must be of type str or bytes, not <class 'int'>
             // 请求头 Content-Length 的值是int，必须显式声明为string
             let val = v.value
-            if(v.name == 'Content-Length' || v.name == 'sec-ch-ua')
+            if(v.name.toLowerCase() == 'content-length' || v.name.toLowerCase() == 'sec-ch-ua')
                 val = this.forceString(val);
             // 值不需要 encodeURIComponent()
             str += `${v.name}${kvcon}${val}${sep}`;
